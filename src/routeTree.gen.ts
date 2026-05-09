@@ -15,6 +15,8 @@ import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated.dashboard'
 import { Route as AuthenticatedCoursesIndexRouteImport } from './routes/_authenticated.courses.index'
+import { Route as AuthenticatedCoursesCourseIdIndexRouteImport } from './routes/_authenticated.courses.$courseId.index'
+import { Route as AuthenticatedCoursesCourseIdModulesModuleIdRouteImport } from './routes/_authenticated.courses.$courseId.modules.$moduleId'
 
 const SignupRoute = SignupRouteImport.update({
   id: '/signup',
@@ -46,6 +48,18 @@ const AuthenticatedCoursesIndexRoute =
     path: '/courses/',
     getParentRoute: () => AuthenticatedRoute,
   } as any)
+const AuthenticatedCoursesCourseIdIndexRoute =
+  AuthenticatedCoursesCourseIdIndexRouteImport.update({
+    id: '/courses/$courseId/',
+    path: '/courses/$courseId/',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
+const AuthenticatedCoursesCourseIdModulesModuleIdRoute =
+  AuthenticatedCoursesCourseIdModulesModuleIdRouteImport.update({
+    id: '/courses/$courseId/modules/$moduleId',
+    path: '/courses/$courseId/modules/$moduleId',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -53,6 +67,8 @@ export interface FileRoutesByFullPath {
   '/signup': typeof SignupRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/courses/': typeof AuthenticatedCoursesIndexRoute
+  '/courses/$courseId/': typeof AuthenticatedCoursesCourseIdIndexRoute
+  '/courses/$courseId/modules/$moduleId': typeof AuthenticatedCoursesCourseIdModulesModuleIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -60,6 +76,8 @@ export interface FileRoutesByTo {
   '/signup': typeof SignupRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/courses': typeof AuthenticatedCoursesIndexRoute
+  '/courses/$courseId': typeof AuthenticatedCoursesCourseIdIndexRoute
+  '/courses/$courseId/modules/$moduleId': typeof AuthenticatedCoursesCourseIdModulesModuleIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -69,12 +87,28 @@ export interface FileRoutesById {
   '/signup': typeof SignupRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/_authenticated/courses/': typeof AuthenticatedCoursesIndexRoute
+  '/_authenticated/courses/$courseId/': typeof AuthenticatedCoursesCourseIdIndexRoute
+  '/_authenticated/courses/$courseId/modules/$moduleId': typeof AuthenticatedCoursesCourseIdModulesModuleIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/login' | '/signup' | '/dashboard' | '/courses/'
+  fullPaths:
+    | '/'
+    | '/login'
+    | '/signup'
+    | '/dashboard'
+    | '/courses/'
+    | '/courses/$courseId/'
+    | '/courses/$courseId/modules/$moduleId'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/login' | '/signup' | '/dashboard' | '/courses'
+  to:
+    | '/'
+    | '/login'
+    | '/signup'
+    | '/dashboard'
+    | '/courses'
+    | '/courses/$courseId'
+    | '/courses/$courseId/modules/$moduleId'
   id:
     | '__root__'
     | '/'
@@ -83,6 +117,8 @@ export interface FileRouteTypes {
     | '/signup'
     | '/_authenticated/dashboard'
     | '/_authenticated/courses/'
+    | '/_authenticated/courses/$courseId/'
+    | '/_authenticated/courses/$courseId/modules/$moduleId'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -136,17 +172,37 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedCoursesIndexRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/courses/$courseId/': {
+      id: '/_authenticated/courses/$courseId/'
+      path: '/courses/$courseId'
+      fullPath: '/courses/$courseId/'
+      preLoaderRoute: typeof AuthenticatedCoursesCourseIdIndexRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/courses/$courseId/modules/$moduleId': {
+      id: '/_authenticated/courses/$courseId/modules/$moduleId'
+      path: '/courses/$courseId/modules/$moduleId'
+      fullPath: '/courses/$courseId/modules/$moduleId'
+      preLoaderRoute: typeof AuthenticatedCoursesCourseIdModulesModuleIdRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
   }
 }
 
 interface AuthenticatedRouteChildren {
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
   AuthenticatedCoursesIndexRoute: typeof AuthenticatedCoursesIndexRoute
+  AuthenticatedCoursesCourseIdIndexRoute: typeof AuthenticatedCoursesCourseIdIndexRoute
+  AuthenticatedCoursesCourseIdModulesModuleIdRoute: typeof AuthenticatedCoursesCourseIdModulesModuleIdRoute
 }
 
 const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
   AuthenticatedCoursesIndexRoute: AuthenticatedCoursesIndexRoute,
+  AuthenticatedCoursesCourseIdIndexRoute:
+    AuthenticatedCoursesCourseIdIndexRoute,
+  AuthenticatedCoursesCourseIdModulesModuleIdRoute:
+    AuthenticatedCoursesCourseIdModulesModuleIdRoute,
 }
 
 const AuthenticatedRouteWithChildren = AuthenticatedRoute._addFileChildren(
