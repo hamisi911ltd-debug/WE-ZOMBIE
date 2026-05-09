@@ -90,6 +90,28 @@ function Dashboard() {
         </p>
       </header>
 
+      {!isAdmin && adminCount === 0 && (
+        <div className="glass-strong flex flex-wrap items-center justify-between gap-4 rounded-2xl p-5">
+          <div className="flex items-center gap-3">
+            <div className="grid size-10 place-items-center rounded-xl bg-brand glow">
+              <ShieldCheck className="size-5 text-primary-foreground" />
+            </div>
+            <div>
+              <p className="font-semibold">Set yourself as the school admin</p>
+              <p className="text-sm text-muted-foreground">
+                No admin exists yet. Claim it to start building courses.
+              </p>
+            </div>
+          </div>
+          <button
+            onClick={claimAdmin}
+            className="rounded-xl bg-brand px-4 py-2 text-sm font-semibold text-primary-foreground glow"
+          >
+            Become Admin
+          </button>
+        </div>
+      )}
+
       <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <StatCard label="Courses" value={stats.courses} icon={GraduationCap} />
         <StatCard label="Modules" value={stats.modules} icon={BookOpen} />
