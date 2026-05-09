@@ -13,6 +13,9 @@ import { Route as SignupRouteImport } from './routes/signup'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AuthenticatedStudentsRouteImport } from './routes/_authenticated.students'
+import { Route as AuthenticatedScheduleRouteImport } from './routes/_authenticated.schedule'
+import { Route as AuthenticatedPaymentsRouteImport } from './routes/_authenticated.payments'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated.dashboard'
 import { Route as AuthenticatedCoursesIndexRouteImport } from './routes/_authenticated.courses.index'
 import { Route as AuthenticatedCoursesCourseIdIndexRouteImport } from './routes/_authenticated.courses.$courseId.index'
@@ -36,6 +39,21 @@ const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
+} as any)
+const AuthenticatedStudentsRoute = AuthenticatedStudentsRouteImport.update({
+  id: '/students',
+  path: '/students',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
+const AuthenticatedScheduleRoute = AuthenticatedScheduleRouteImport.update({
+  id: '/schedule',
+  path: '/schedule',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
+const AuthenticatedPaymentsRoute = AuthenticatedPaymentsRouteImport.update({
+  id: '/payments',
+  path: '/payments',
+  getParentRoute: () => AuthenticatedRoute,
 } as any)
 const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
   id: '/dashboard',
@@ -66,6 +84,9 @@ export interface FileRoutesByFullPath {
   '/login': typeof LoginRoute
   '/signup': typeof SignupRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
+  '/payments': typeof AuthenticatedPaymentsRoute
+  '/schedule': typeof AuthenticatedScheduleRoute
+  '/students': typeof AuthenticatedStudentsRoute
   '/courses/': typeof AuthenticatedCoursesIndexRoute
   '/courses/$courseId/': typeof AuthenticatedCoursesCourseIdIndexRoute
   '/courses/$courseId/modules/$moduleId': typeof AuthenticatedCoursesCourseIdModulesModuleIdRoute
@@ -75,6 +96,9 @@ export interface FileRoutesByTo {
   '/login': typeof LoginRoute
   '/signup': typeof SignupRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
+  '/payments': typeof AuthenticatedPaymentsRoute
+  '/schedule': typeof AuthenticatedScheduleRoute
+  '/students': typeof AuthenticatedStudentsRoute
   '/courses': typeof AuthenticatedCoursesIndexRoute
   '/courses/$courseId': typeof AuthenticatedCoursesCourseIdIndexRoute
   '/courses/$courseId/modules/$moduleId': typeof AuthenticatedCoursesCourseIdModulesModuleIdRoute
@@ -86,6 +110,9 @@ export interface FileRoutesById {
   '/login': typeof LoginRoute
   '/signup': typeof SignupRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
+  '/_authenticated/payments': typeof AuthenticatedPaymentsRoute
+  '/_authenticated/schedule': typeof AuthenticatedScheduleRoute
+  '/_authenticated/students': typeof AuthenticatedStudentsRoute
   '/_authenticated/courses/': typeof AuthenticatedCoursesIndexRoute
   '/_authenticated/courses/$courseId/': typeof AuthenticatedCoursesCourseIdIndexRoute
   '/_authenticated/courses/$courseId/modules/$moduleId': typeof AuthenticatedCoursesCourseIdModulesModuleIdRoute
@@ -97,6 +124,9 @@ export interface FileRouteTypes {
     | '/login'
     | '/signup'
     | '/dashboard'
+    | '/payments'
+    | '/schedule'
+    | '/students'
     | '/courses/'
     | '/courses/$courseId/'
     | '/courses/$courseId/modules/$moduleId'
@@ -106,6 +136,9 @@ export interface FileRouteTypes {
     | '/login'
     | '/signup'
     | '/dashboard'
+    | '/payments'
+    | '/schedule'
+    | '/students'
     | '/courses'
     | '/courses/$courseId'
     | '/courses/$courseId/modules/$moduleId'
@@ -116,6 +149,9 @@ export interface FileRouteTypes {
     | '/login'
     | '/signup'
     | '/_authenticated/dashboard'
+    | '/_authenticated/payments'
+    | '/_authenticated/schedule'
+    | '/_authenticated/students'
     | '/_authenticated/courses/'
     | '/_authenticated/courses/$courseId/'
     | '/_authenticated/courses/$courseId/modules/$moduleId'
@@ -158,6 +194,27 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated/students': {
+      id: '/_authenticated/students'
+      path: '/students'
+      fullPath: '/students'
+      preLoaderRoute: typeof AuthenticatedStudentsRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/schedule': {
+      id: '/_authenticated/schedule'
+      path: '/schedule'
+      fullPath: '/schedule'
+      preLoaderRoute: typeof AuthenticatedScheduleRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/payments': {
+      id: '/_authenticated/payments'
+      path: '/payments'
+      fullPath: '/payments'
+      preLoaderRoute: typeof AuthenticatedPaymentsRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
     '/_authenticated/dashboard': {
       id: '/_authenticated/dashboard'
       path: '/dashboard'
@@ -191,6 +248,9 @@ declare module '@tanstack/react-router' {
 
 interface AuthenticatedRouteChildren {
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
+  AuthenticatedPaymentsRoute: typeof AuthenticatedPaymentsRoute
+  AuthenticatedScheduleRoute: typeof AuthenticatedScheduleRoute
+  AuthenticatedStudentsRoute: typeof AuthenticatedStudentsRoute
   AuthenticatedCoursesIndexRoute: typeof AuthenticatedCoursesIndexRoute
   AuthenticatedCoursesCourseIdIndexRoute: typeof AuthenticatedCoursesCourseIdIndexRoute
   AuthenticatedCoursesCourseIdModulesModuleIdRoute: typeof AuthenticatedCoursesCourseIdModulesModuleIdRoute
@@ -198,6 +258,9 @@ interface AuthenticatedRouteChildren {
 
 const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
+  AuthenticatedPaymentsRoute: AuthenticatedPaymentsRoute,
+  AuthenticatedScheduleRoute: AuthenticatedScheduleRoute,
+  AuthenticatedStudentsRoute: AuthenticatedStudentsRoute,
   AuthenticatedCoursesIndexRoute: AuthenticatedCoursesIndexRoute,
   AuthenticatedCoursesCourseIdIndexRoute:
     AuthenticatedCoursesCourseIdIndexRoute,
