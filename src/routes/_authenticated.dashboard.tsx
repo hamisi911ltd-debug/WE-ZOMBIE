@@ -2,7 +2,8 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useAuth } from "@/lib/auth-context";
 import { supabase } from "@/integrations/supabase/client";
-import { GraduationCap, Users, BookOpen, CreditCard, Calendar, ArrowRight } from "lucide-react";
+import { GraduationCap, Users, BookOpen, CreditCard, Calendar, ArrowRight, ShieldCheck } from "lucide-react";
+import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
   component: Dashboard,
@@ -31,9 +32,29 @@ function StatCard({
 }
 
 function Dashboard() {
-  const { user, roles } = useAuth();
+  const { user, roles, refreshRoles } = useAuth();
   const isAdmin = roles.includes("admin");
   const [stats, setStats] = useState({ courses: 0, modules: 0, lessons: 0, students: 0 });
+  const [adminCount, setAdminCount] = useState<number | null>(null);
+
+  useEffect(() => {
+    supabase
+      .from("user_roles")
+      .select("id", { count: "exact", head: true })
+      .eq("role", "admin")
+      .then(({ count }) => setAdminCount(count ?? 0));
+  }, [roles]);
+
+  const claimAdmin = async () => {
+    const { data, error } = await supabase.rpc("claim_first_admin");
+    if (error) return toast.error(error.message);
+    if (data) {
+      toast.success("You are now the Admin.");
+      await refreshRoles();
+    } else {
+      toast.error("An admin already exists.");
+    }
+  };
 
   useEffect(() => {
     (async () => {
