@@ -1,61 +1,64 @@
 import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
-import type { Session, User } from "@supabase/supabase-js";
-import { supabase } from "@/backend/integrations/supabase/client";
+import { getSessionFn, logoutFn } from "./auth-server";
 
 export type AppRole = "admin" | "instructor" | "student";
 
 interface AuthCtx {
-  session: Session | null;
-  user: User | null;
+  session: { id: string, email: string } | null;
+  user: { id: string, email: string } | null;
   roles: AppRole[];
   loading: boolean;
   isAuthenticated: boolean;
   hasRole: (r: AppRole) => boolean;
   signOut: () => Promise<void>;
+  checkSession: () => Promise<void>;
   refreshRoles: () => Promise<void>;
 }
 
 const Ctx = createContext<AuthCtx | null>(null);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [session, setSession] = useState<Session | null>(null);
+  const [session, setSession] = useState<{ id: string, email: string } | null>(null);
   const [roles, setRoles] = useState<AppRole[]>([]);
   const [loading, setLoading] = useState(true);
 
-  const loadRoles = async (uid: string | undefined) => {
-    if (!uid) {
+  const checkSession = async () => {
+    try {
+      const data = await getSessionFn();
+      if (data) {
+        setSession(data.user);
+        setRoles(data.roles as AppRole[]);
+      } else {
+        setSession(null);
+        setRoles([]);
+      }
+    } catch (err) {
+      setSession(null);
       setRoles([]);
-      return;
+    } finally {
+      setLoading(false);
     }
-    const { data } = await supabase.from("user_roles").select("role").eq("user_id", uid);
-    setRoles((data ?? []).map((r) => r.role as AppRole));
   };
 
   useEffect(() => {
-    const { data: sub } = supabase.auth.onAuthStateChange((_evt, s) => {
-      setSession(s);
-      // defer to avoid deadlocks
-      setTimeout(() => loadRoles(s?.user?.id), 0);
-    });
-    supabase.auth.getSession().then(({ data }) => {
-      setSession(data.session);
-      loadRoles(data.session?.user?.id).finally(() => setLoading(false));
-    });
-    return () => sub.subscription.unsubscribe();
+    checkSession();
   }, []);
 
   const value = useMemo<AuthCtx>(
     () => ({
       session,
-      user: session?.user ?? null,
+      user: session,
       roles,
       loading,
       isAuthenticated: !!session,
       hasRole: (r) => roles.includes(r),
       signOut: async () => {
-        await supabase.auth.signOut();
+        await logoutFn();
+        setSession(null);
+        setRoles([]);
       },
-      refreshRoles: () => loadRoles(session?.user?.id),
+      checkSession,
+      refreshRoles: checkSession, // We can just call checkSession to refresh everything
     }),
     [session, roles, loading],
   );

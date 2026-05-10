@@ -1,10 +1,8 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { supabase } from '@/backend/integrations/supabase/client';
+import { getPaymentsFn, createPaymentFn, updatePaymentFn, deletePaymentFn } from '@/backend/lib/api-payments';
 import { useAuth } from '@/backend/lib/auth-context';
-import { filterPaymentsForUser } from '@/backend/lib/payments';
-import type { Tables, TablesInsert, TablesUpdate } from '@/backend/integrations/supabase/types';
 
-export type Payment = Tables<'payments'>;
+export type Payment = any;
 
 /**
  * Fetches payments based on the current user's role.
@@ -14,29 +12,16 @@ export type Payment = Tables<'payments'>;
  * Implements Requirements 6.1, 6.3, 6.4
  */
 export function usePayments(userId?: string) {
-  const { hasRole, user } = useAuth();
-  const isAdmin = hasRole('admin') || hasRole('instructor');
+  const { user } = useAuth();
+  const effectiveUserId = userId ?? user?.id;
 
   return useQuery({
-    queryKey: ['payments', userId],
+    queryKey: ['payments', effectiveUserId],
     queryFn: async (): Promise<Payment[]> => {
-      const { data, error } = await supabase.from('payments').select('*');
-
-      if (error) throw error;
-      const payments = data ?? [];
-
-      // Admins see all payments
-      if (isAdmin) {
-        return payments;
-      }
-
-      // Students see only their own payments
-      const effectiveUserId = userId ?? user?.id;
-      if (!effectiveUserId) return [];
-
-      return filterPaymentsForUser(payments, effectiveUserId);
+      const data = await getPaymentsFn({ userId: effectiveUserId });
+      return data as Payment[];
     },
-    enabled: !!user,
+    enabled: !!effectiveUserId,
   });
 }
 
@@ -50,15 +35,9 @@ export function useCreatePayment() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async (newPayment: TablesInsert<'payments'>) => {
-      const { data, error } = await supabase
-        .from('payments')
-        .insert(newPayment)
-        .select()
-        .single();
-
-      if (error) throw error;
-      return data;
+    mutationFn: async (newPayment: any) => {
+      const created = await createPaymentFn(newPayment);
+      return created;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['payments'] });
@@ -76,16 +55,9 @@ export function useUpdatePayment() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async ({ id, ...updates }: TablesUpdate<'payments'> & { id: string }) => {
-      const { data, error } = await supabase
-        .from('payments')
-        .update(updates)
-        .eq('id', id)
-        .select()
-        .single();
-
-      if (error) throw error;
-      return data;
+    mutationFn: async (updates: any) => {
+      const updated = await updatePaymentFn(updates);
+      return updated;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['payments'] });
@@ -102,8 +74,7 @@ export function useDeletePayment() {
 
   return useMutation({
     mutationFn: async (id: string) => {
-      const { error } = await supabase.from('payments').delete().eq('id', id);
-      if (error) throw error;
+      await deletePaymentFn(id);
       return id;
     },
     onSuccess: () => {

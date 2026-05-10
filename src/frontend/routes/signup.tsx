@@ -1,7 +1,7 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { supabase } from "@/backend/integrations/supabase/client";
 import { useAuth } from "@/backend/lib/auth-context";
+import { signupFn } from "@/backend/lib/auth-server";
 import { toast } from "sonner";
 import { Car, Eye, EyeOff, CheckCircle } from "lucide-react";
 
@@ -11,7 +11,7 @@ export const Route = createFileRoute("/signup")({
 
 function SignupPage() {
   const nav = useNavigate();
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, checkSession } = useAuth();
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -25,17 +25,17 @@ function SignupPage() {
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    const redirectTo =
-      typeof window !== "undefined" ? `${window.location.origin}/dashboard` : undefined;
-    const { error } = await supabase.auth.signUp({
-      email,
-      password,
-      options: { data: { full_name: fullName }, emailRedirectTo: redirectTo },
-    });
-    setLoading(false);
-    if (error) return toast.error(error.message);
-    toast.success("Account created! Check your email to confirm.");
-    nav({ to: "/login" });
+    
+    try {
+      await signupFn({ data: { email, password, fullName } });
+      await checkSession();
+      toast.success("Account created successfully! Welcome.");
+      nav({ to: "/dashboard" });
+    } catch (error: any) {
+      toast.error(error.message || "Failed to create account. Please try again.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (

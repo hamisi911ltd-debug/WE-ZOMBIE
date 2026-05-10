@@ -3,5 +3,15 @@
   "name": "we-zombie",
   "compatibility_date": "2025-09-24",
   "compatibility_flags": ["nodejs_compat"],
-  "main": "@tanstack/react-start/server-entry"
+  "main": "dist/server/index.js",
+  "assets": {
+    "directory": "dist/client"
+  },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "we-zombie",
+      "database_id": "b31da365-97d1-4155-9214-c2ec8c886766"
+    }
+  ]
 }
