@@ -1,4 +1,4 @@
-﻿import { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -13,24 +13,25 @@ import {
   useScheduleEntries,
 } from "@/frontend/hooks/use-schedule";
 import { useStudents } from "@/frontend/hooks/use-students";
-import { supabase } from "@/backend/integrations/supabase/client";
 import { hasScheduleConflict } from "@/backend/lib/schedule";
 import { useAuth } from "@/backend/lib/auth-context";
 import type { ScheduleEntry } from "@/frontend/hooks/use-schedule";
 import type { ScheduleConflict } from "@/backend/types/domain";
+import { getInstructorsFn } from "@/backend/lib/api-profile";
+import { getModulesFn } from "@/backend/lib/api-modules";
 
 const scheduleSchema = z
   .object({
-    instructor_id: z.string().min(1, "Instructor is required"),
-    module_id: z.string().optional(),
-    student_id: z.string().optional(),
-    scheduled_date: z.string().min(1, "Date is required"),
-    start_time: z.string().min(1, "Start time is required"),
-    end_time: z.string().min(1, "End time is required"),
+    instructorId: z.string().min(1, "Instructor is required"),
+    moduleId: z.string().optional(),
+    studentId: z.string().optional(),
+    scheduledDate: z.string().min(1, "Date is required"),
+    startTime: z.string().min(1, "Start time is required"),
+    endTime: z.string().min(1, "End time is required"),
   })
-  .refine((data) => data.end_time > data.start_time, {
+  .refine((data) => data.endTime > data.startTime, {
     message: "End time must be after start time",
-    path: ["end_time"],
+    path: ["endTime"],
   });
 
 type ScheduleFormValues = z.infer<typeof scheduleSchema>;
@@ -47,7 +48,7 @@ export function ScheduleEntryForm({ open, onOpenChange, entry }: ScheduleEntryFo
 
   const [conflict, setConflict] = useState<ScheduleConflict | null>(null);
   const [pendingValues, setPendingValues] = useState<ScheduleFormValues | null>(null);
-  const [instructors, setInstructors] = useState<Array<{ id: string; full_name: string | null }>>([]);
+  const [instructors, setInstructors] = useState<Array<{ id: string; fullName: string | null }>>([]);
   const [modules, setModules] = useState<Array<{ id: string; title: string }>>([]);
 
   const { data: students = [] } = useStudents();
@@ -61,26 +62,21 @@ export function ScheduleEntryForm({ open, onOpenChange, entry }: ScheduleEntryFo
   const form = useForm<ScheduleFormValues>({
     resolver: zodResolver(scheduleSchema),
     defaultValues: {
-      instructor_id: entry?.instructor_id ?? (hasRole("instructor") ? (user?.id ?? "") : ""),
-      module_id: entry?.module_id ?? "",
-      student_id: entry?.student_id ?? "",
-      scheduled_date: entry?.scheduled_date ?? "",
-      start_time: entry?.start_time ?? "",
-      end_time: entry?.end_time ?? "",
+      instructorId: entry?.instructorId ?? (hasRole("instructor") ? (user?.id ?? "") : ""),
+      moduleId: entry?.moduleId ?? "",
+      studentId: entry?.studentId ?? "",
+      scheduledDate: entry?.scheduledDate ?? "",
+      startTime: entry?.startTime ?? "",
+      endTime: entry?.endTime ?? "",
     },
   });
 
   useEffect(() => {
-    supabase.from("user_roles").select("user_id").eq("role", "instructor").then(async ({ data: roles }) => {
-      if (!roles?.length) return;
-      const ids = roles.map((r) => r.user_id);
-      const { data: profiles } = await supabase.from("profiles").select("id, full_name").in("id", ids);
-      setInstructors(profiles ?? []);
-    });
+    getInstructorsFn().then((data) => setInstructors(data as any));
   }, []);
 
   useEffect(() => {
-    supabase.from("modules").select("id, title").order("title").then(({ data }) => setModules(data ?? []));
+    getModulesFn().then((data) => setModules(data as any));
   }, []);
 
   const handleClose = () => {
@@ -92,12 +88,12 @@ export function ScheduleEntryForm({ open, onOpenChange, entry }: ScheduleEntryFo
 
   const submitEntry = async (values: ScheduleFormValues) => {
     const payload = {
-      instructor_id: values.instructor_id,
-      module_id: values.module_id || null,
-      student_id: values.student_id || null,
-      scheduled_date: values.scheduled_date,
-      start_time: values.start_time,
-      end_time: values.end_time,
+      instructorId: values.instructorId,
+      moduleId: values.moduleId || null,
+      studentId: values.studentId || null,
+      scheduledDate: values.scheduledDate,
+      startTime: values.startTime,
+      endTime: values.endTime,
     };
     try {
       if (isEditing && entry) {
@@ -116,17 +112,17 @@ export function ScheduleEntryForm({ open, onOpenChange, entry }: ScheduleEntryFo
   const onSubmit = async (values: ScheduleFormValues) => {
     const candidateEntry = {
       id: entry?.id ?? "__new__",
-      instructor_id: values.instructor_id,
-      student_id: values.student_id ?? null,
-      scheduled_date: values.scheduled_date,
-      start_time: values.start_time,
-      end_time: values.end_time,
+      instructorId: values.instructorId,
+      studentId: values.studentId ?? null,
+      scheduledDate: values.scheduledDate,
+      startTime: values.startTime,
+      endTime: values.endTime,
     };
     const conflictingEntry = allEntries.find(
-      (e) => e.id !== entry?.id && e.instructor_id === values.instructor_id && hasScheduleConflict(candidateEntry, e)
+      (e) => e.id !== entry?.id && e.instructorId === values.instructorId && hasScheduleConflict(candidateEntry as any, e)
     );
     if (conflictingEntry) {
-      setConflict({ conflictingEntryId: conflictingEntry.id, instructorId: conflictingEntry.instructor_id, date: conflictingEntry.scheduled_date, startTime: conflictingEntry.start_time, endTime: conflictingEntry.end_time });
+      setConflict({ conflictingEntryId: conflictingEntry.id, instructorId: conflictingEntry.instructorId, date: conflictingEntry.scheduledDate, startTime: conflictingEntry.startTime, endTime: conflictingEntry.endTime });
       setPendingValues(values);
       return;
     }
@@ -169,16 +165,16 @@ export function ScheduleEntryForm({ open, onOpenChange, entry }: ScheduleEntryFo
           <form onSubmit={form.handleSubmit(onSubmit)} className="p-6 space-y-4">
             <div>
               <label className={labelClass}>Instructor</label>
-              <select {...form.register("instructor_id")} disabled={!isAdmin} className={inputClass + " disabled:opacity-60"}>
+              <select {...form.register("instructorId")} disabled={!isAdmin} className={inputClass + " disabled:opacity-60"}>
                 <option value="">Select an instructor…</option>
-                {instructors.map((i) => <option key={i.id} value={i.id}>{i.full_name ?? i.id}</option>)}
+                {instructors.map((i) => <option key={i.id} value={i.id}>{i.fullName ?? i.id}</option>)}
               </select>
-              {form.formState.errors.instructor_id && <p className={errorClass}>{form.formState.errors.instructor_id.message}</p>}
+              {form.formState.errors.instructorId && <p className={errorClass}>{form.formState.errors.instructorId.message}</p>}
             </div>
 
             <div>
               <label className={labelClass}>Module (optional)</label>
-              <select {...form.register("module_id")} className={inputClass}>
+              <select {...form.register("moduleId")} className={inputClass}>
                 <option value="">No module</option>
                 {modules.map((m) => <option key={m.id} value={m.id}>{m.title}</option>)}
               </select>
@@ -186,28 +182,28 @@ export function ScheduleEntryForm({ open, onOpenChange, entry }: ScheduleEntryFo
 
             <div>
               <label className={labelClass}>Student (optional)</label>
-              <select {...form.register("student_id")} className={inputClass}>
+              <select {...form.register("studentId")} className={inputClass}>
                 <option value="">No student</option>
-                {students.map((s) => <option key={s.id} value={s.id}>{s.full_name ?? s.id}</option>)}
+                {students.map((s) => <option key={s.id} value={s.id}>{s.fullName ?? s.id}</option>)}
               </select>
             </div>
 
             <div>
               <label className={labelClass}>Date</label>
-              <input {...form.register("scheduled_date")} type="date" className={inputClass} />
-              {form.formState.errors.scheduled_date && <p className={errorClass}>{form.formState.errors.scheduled_date.message}</p>}
+              <input {...form.register("scheduledDate")} type="date" className={inputClass} />
+              {form.formState.errors.scheduledDate && <p className={errorClass}>{form.formState.errors.scheduledDate.message}</p>}
             </div>
 
             <div className="grid grid-cols-2 gap-3">
               <div>
                 <label className={labelClass}>Start Time</label>
-                <input {...form.register("start_time")} type="time" className={inputClass} />
-                {form.formState.errors.start_time && <p className={errorClass}>{form.formState.errors.start_time.message}</p>}
+                <input {...form.register("startTime")} type="time" className={inputClass} />
+                {form.formState.errors.startTime && <p className={errorClass}>{form.formState.errors.startTime.message}</p>}
               </div>
               <div>
                 <label className={labelClass}>End Time</label>
-                <input {...form.register("end_time")} type="time" className={inputClass} />
-                {form.formState.errors.end_time && <p className={errorClass}>{form.formState.errors.end_time.message}</p>}
+                <input {...form.register("endTime")} type="time" className={inputClass} />
+                {form.formState.errors.endTime && <p className={errorClass}>{form.formState.errors.endTime.message}</p>}
               </div>
             </div>
 

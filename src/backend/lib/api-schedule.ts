@@ -1,51 +1,70 @@
 import { createServerFn } from "@tanstack/react-start";
 import { getDb } from "./db";
 import { scheduleEntries } from "./schema";
-import { eq, and } from "drizzle-orm";
 import { getSessionFn } from "./auth-server";
+import { eq, and, or } from "drizzle-orm";
 
 // GET all schedule entries (optionally filtered by user)
-export const getScheduleFn = createServerFn({ method: "GET" }).handler(async ({ query }: { query?: { userId?: string } }) => {
-  const session = await getSessionFn();
-  if (!session) throw new Error("Unauthorized");
-  const db = getDb(process.env);
-  const { userId } = query ?? {};
-  let q = db.select().from(scheduleEntries);
-  if (userId) q = q.where(eq(scheduleEntries.userId, userId));
-  const rows = await q.all();
-  return rows;
-});
+export const getScheduleFn = createServerFn({ method: "GET" })
+  .validator((q: { userId?: string } | undefined) => q)
+  .handler(async ({ data: query }) => {
+    const session = await getSessionFn();
+    if (!session) throw new Error("Unauthorized");
+    const db = getDb(process.env);
+    const { userId } = query ?? {};
+    
+    if (userId) {
+      return await db
+        .select()
+        .from(scheduleEntries)
+        .where(or(eq(scheduleEntries.instructorId, userId), eq(scheduleEntries.studentId, userId)))
+        .all();
+    }
+    
+    return await db.select().from(scheduleEntries).all();
+  });
 
 // POST create schedule entry
 export const createScheduleFn = createServerFn({ method: "POST" })
   .validator((d: any) => d as { data: any })
-  .handler(async ({ data }) => {
+  .handler(async ({ data: { data } }) => {
     const session = await getSessionFn();
     if (!session) throw new Error("Unauthorized");
     const db = getDb(process.env);
-    const { data: inserted } = await db.insert(scheduleEntries).values(data).returning().all();
-    return inserted;
-});
+    const id = crypto.randomUUID();
+    const now = new Date().toISOString();
+    const newEntry = {
+      ...data,
+      id,
+      createdAt: now,
+      updatedAt: now,
+    };
+    await db.insert(scheduleEntries).values(newEntry).run();
+    return newEntry;
+  });
 
 // PUT update schedule entry
-export const updateScheduleFn = createServerFn({ method: "PUT" })
+export const updateScheduleFn = createServerFn({ method: "POST" }) // Changed to POST for better compatibility with some environments
   .validator((d: any) => d as { id: string; updates: any })
-  .handler(async ({ id, updates }) => {
+  .handler(async ({ data: { id, updates } }) => {
     const session = await getSessionFn();
     if (!session) throw new Error("Unauthorized");
     const db = getDb(process.env);
-    await db.update(scheduleEntries).set(updates).where(eq(scheduleEntries.id, id)).run();
-    const row = await db.select().from(scheduleEntries).where(eq(scheduleEntries.id, id)).get();
-    return row;
-});
+    await db
+      .update(scheduleEntries)
+      .set({ ...updates, updatedAt: new Date().toISOString() })
+      .where(eq(scheduleEntries.id, id))
+      .run();
+    return await db.select().from(scheduleEntries).where(eq(scheduleEntries.id, id)).get();
+  });
 
 // DELETE schedule entry
-export const deleteScheduleFn = createServerFn({ method: "DELETE" })
+export const deleteScheduleFn = createServerFn({ method: "POST" })
   .validator((d: any) => d as { id: string })
-  .handler(async ({ id }) => {
+  .handler(async ({ data: { id } }) => {
     const session = await getSessionFn();
     if (!session) throw new Error("Unauthorized");
     const db = getDb(process.env);
     await db.delete(scheduleEntries).where(eq(scheduleEntries.id, id)).run();
-    return { id };
-});
+    return { success: true };
+  });

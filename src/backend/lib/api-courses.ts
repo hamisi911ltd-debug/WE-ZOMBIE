@@ -87,3 +87,17 @@ export const archiveCourseFn = createServerFn({ method: "POST" })
 
     return { success: true };
   });
+
+export const deleteCourseFn = createServerFn({ method: "POST" })
+  .validator((id: string) => id)
+  .handler(async ({ data: id }) => {
+    const session = await getSessionFn();
+    if (!session || (!session.roles.includes("admin") && !session.roles.includes("instructor"))) {
+      throw new Error("Unauthorized");
+    }
+
+    const db = getDb(process.env);
+    await db.delete(courses).where(eq(courses.id, id)).run();
+    return { success: true };
+  });
+

@@ -1,4 +1,4 @@
-﻿import { Printer } from "lucide-react";
+import { Printer } from "lucide-react";
 import { Button } from "@/frontend/components/ui/button";
 import { generateReceiptContent } from "@/backend/lib/payments";
 
@@ -6,8 +6,8 @@ interface ReceiptDownloadProps {
   payment: {
     id: string;
     amount: number;
-    due_date: string;
-    created_at: string;
+    dueDate: string;
+    createdAt: string;
     status: string;
   };
   studentName: string;

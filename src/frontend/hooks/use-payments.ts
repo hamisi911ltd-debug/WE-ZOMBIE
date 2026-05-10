@@ -2,7 +2,16 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { getPaymentsFn, createPaymentFn, updatePaymentFn, deletePaymentFn } from '@/backend/lib/api-payments';
 import { useAuth } from '@/backend/lib/auth-context';
 
-export type Payment = any;
+export type Payment = {
+  id: string;
+  userId: string;
+  amount: number;
+  status: 'pending' | 'paid' | 'overdue';
+  dueDate: string;
+  proofUrl: string | null;
+  createdAt: string;
+  updatedAt: string;
+};
 
 /**
  * Fetches payments based on the current user's role.

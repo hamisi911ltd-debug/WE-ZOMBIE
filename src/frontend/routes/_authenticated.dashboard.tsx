@@ -1,7 +1,6 @@
-﻿import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useAuth } from "@/backend/lib/auth-context";
-import { supabase } from "@/backend/integrations/supabase/client";
 import { useEnrollments } from "@/frontend/hooks/use-enrollments";
 import { useLessonProgress } from "@/frontend/hooks/use-lesson-progress";
 import { useScheduleEntries } from "@/frontend/hooks/use-schedule";
@@ -25,6 +24,12 @@ import {
   Activity,
 } from "lucide-react";
 import { toast } from "sonner";
+import {
+  getDashboardStatsFn,
+  getAdminCountFn,
+  claimFirstAdminFn,
+  getStudentCourseStatsFn,
+} from "@/backend/lib/api-dashboard";
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
   component: Dashboard,
@@ -86,58 +91,35 @@ function AdminDashboard() {
   const [paymentFormOpen, setPaymentFormOpen] = useState(false);
 
   useEffect(() => {
-    const now = new Date();
-    const sevenDaysLater = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
-    const todayStr = now.toISOString().split("T")[0];
-    const futureStr = sevenDaysLater.toISOString().split("T")[0];
-
-    (async () => {
-      const [enrollments, courses, payments, schedule] = await Promise.all([
-        supabase.from("enrollments").select("id", { count: "exact", head: true }).eq("status", "active"),
-        supabase.from("courses").select("id", { count: "exact", head: true }).eq("archived", false),
-        supabase.from("payments").select("id", { count: "exact", head: true }).eq("status", "pending"),
-        supabase.from("schedule_entries").select("id", { count: "exact", head: true }).gte("scheduled_date", todayStr).lte("scheduled_date", futureStr),
-      ]);
-
-      setStats({
-        enrolledStudents: enrollments.count ?? 0,
-        activeCourses: courses.count ?? 0,
-        pendingPayments: payments.count ?? 0,
-        upcomingEntries: schedule.count ?? 0,
-      });
-
-      const [recentPayments, recentEnrollments] = await Promise.all([
-        supabase.from("payments").select("id, amount, status, created_at, user_id").order("created_at", { ascending: false }).limit(4),
-        supabase.from("enrollments").select("id, status, created_at, user_id, course_id").order("created_at", { ascending: false }).limit(4),
-      ]);
-
+    getDashboardStatsFn().then((data) => {
+      setStats(data.stats);
       const activity: typeof recentActivity = [];
 
-      for (const p of recentPayments.data ?? []) {
+      for (const p of data.recentPayments) {
         activity.push({
           id: p.id,
           type: "payment",
           label: `Payment — $${Number(p.amount).toFixed(2)}`,
-          sub: `Student ${p.user_id.slice(0, 8)}…`,
-          time: new Date(p.created_at).toLocaleDateString("en-US", { month: "short", day: "numeric" }),
+          sub: `Student ${p.userId.slice(0, 8)}…`,
+          time: new Date(p.createdAt).toLocaleDateString("en-US", { month: "short", day: "numeric" }),
           status: p.status,
         });
       }
 
-      for (const e of recentEnrollments.data ?? []) {
+      for (const e of data.recentEnrollments) {
         activity.push({
           id: e.id,
           type: "enrollment",
           label: `New Enrollment`,
-          sub: `Student ${e.user_id.slice(0, 8)}…`,
-          time: new Date(e.created_at).toLocaleDateString("en-US", { month: "short", day: "numeric" }),
+          sub: `Student ${e.userId.slice(0, 8)}…`,
+          time: new Date(e.createdAt).toLocaleDateString("en-US", { month: "short", day: "numeric" }),
           status: e.status,
         });
       }
 
       activity.sort((a, b) => b.time.localeCompare(a.time));
       setRecentActivity(activity.slice(0, 6));
-    })();
+    });
   }, []);
 
   return (
@@ -343,7 +325,7 @@ function StudentDashboard() {
   const { data: scheduleEntries = [] } = useScheduleEntries(userId, "student");
 
   const activeEnrollment = enrollments.find((e) => e.status === "active");
-  const courseId = activeEnrollment?.course_id ?? "";
+  const courseId = activeEnrollment?.courseId ?? "";
 
   const { data: progressRecords = [] } = useLessonProgress(userId, courseId);
 
@@ -352,25 +334,21 @@ function StudentDashboard() {
 
   useEffect(() => {
     if (!courseId) return;
-    (async () => {
-      const { data: course } = await supabase.from("courses").select("title").eq("id", courseId).single();
-      if (course) setCourseName(course.title);
-
-      const { data: modules } = await supabase.from("modules").select("id").eq("course_id", courseId);
-      if (!modules?.length) return;
-      const moduleIds = modules.map((m) => m.id);
-      const { count } = await supabase.from("lessons").select("id", { count: "exact", head: true }).in("module_id", moduleIds);
-      setTotalLessons(count ?? 0);
-    })();
+    getStudentCourseStatsFn({ data: courseId }).then((data) => {
+      if (data) {
+        setCourseName(data.title);
+        setTotalLessons(data.totalLessons);
+      }
+    });
   }, [courseId]);
 
   const completedCount = progressRecords.filter((p) => p.completed).length;
   const completionPct = calculateCompletionPercentage(completedCount, totalLessons);
   const nextLesson = getNextLesson(scheduleEntries, new Date());
 
-  const formatCountdown = (entry: typeof nextLesson) => {
+  const formatCountdown = (entry: any) => {
     if (!entry) return null;
-    const entryTime = new Date(`${entry.scheduled_date}T${entry.start_time}`);
+    const entryTime = new Date(`${entry.scheduledDate}T${entry.startTime}`);
     const diff = entryTime.getTime() - Date.now();
     if (diff <= 0) return "Now";
     const days = Math.floor(diff / (1000 * 60 * 60 * 24));
@@ -399,7 +377,7 @@ function StudentDashboard() {
           Welcome back
         </p>
         <h2 className="mt-1 font-display text-2xl font-black">
-          {user?.user_metadata?.full_name ?? user?.email}
+          {user?.fullName ?? user?.email}
         </h2>
         {courseName && (
           <p className="mt-1 text-sm" style={{ color: "rgba(255,255,255,0.70)" }}>
@@ -456,14 +434,14 @@ function StudentDashboard() {
             <>
               <p className="font-display text-4xl font-black text-gray-900">{formatCountdown(nextLesson)}</p>
               <p className="mt-2 text-sm text-gray-500">
-                {new Date(nextLesson.scheduled_date + "T00:00:00").toLocaleDateString("en-US", {
+                {new Date(nextLesson.scheduledDate + "T00:00:00").toLocaleDateString("en-US", {
                   weekday: "long",
                   month: "short",
                   day: "numeric",
                 })}
               </p>
               <p className="text-sm font-semibold text-gray-700">
-                {formatTime(nextLesson.start_time)} – {formatTime(nextLesson.end_time)}
+                {formatTime(nextLesson.startTime)} – {formatTime(nextLesson.endTime)}
               </p>
               <Link
                 to="/schedule"
@@ -525,21 +503,16 @@ function Dashboard() {
   const [adminCount, setAdminCount] = useState<number | null>(null);
 
   useEffect(() => {
-    supabase
-      .from("user_roles")
-      .select("id", { count: "exact", head: true })
-      .eq("role", "admin")
-      .then(({ count }) => setAdminCount(count ?? 0));
+    getAdminCountFn().then((count) => setAdminCount(count));
   }, [roles]);
 
   const claimAdmin = async () => {
-    const { data, error } = await supabase.rpc("claim_first_admin");
-    if (error) return toast.error(error.message);
-    if (data) {
+    const res = await claimFirstAdminFn();
+    if (res.success) {
       toast.success("You are now the Admin.");
       await refreshRoles();
     } else {
-      toast.error("An admin already exists.");
+      toast.error(res.message || "An admin already exists.");
     }
   };
 
@@ -587,3 +560,4 @@ function Dashboard() {
     </div>
   );
 }
+

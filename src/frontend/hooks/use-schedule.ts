@@ -1,11 +1,19 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { supabase } from '@/backend/integrations/supabase/client';
 import { useAuth } from '@/backend/lib/auth-context';
 import { filterScheduleForUser } from '@/backend/lib/schedule';
 import type { AppRole } from '@/backend/types/domain';
-import type { Tables, TablesInsert, TablesUpdate } from '@/backend/integrations/supabase/types';
+import { getScheduleFn, createScheduleFn, updateScheduleFn, deleteScheduleFn } from '@/backend/lib/api-schedule';
 
-export type ScheduleEntry = Tables<'schedule_entries'>;
+export type ScheduleEntry = {
+  id: string;
+  instructorId: string;
+  studentId: string | null;
+  moduleId: string | null;
+  scheduledDate: string;
+  startTime: string;
+  endTime: string;
+  createdAt: string;
+};
 
 /**
  * Fetches schedule entries scoped by the user's role.
@@ -22,16 +30,13 @@ export function useScheduleEntries(userId?: string, role?: AppRole) {
   return useQuery({
     queryKey: ['schedule-entries', effectiveUserId, effectiveRole],
     queryFn: async (): Promise<ScheduleEntry[]> => {
-      const { data, error } = await supabase.from('schedule_entries').select('*');
-
-      if (error) throw error;
-      const entries = data ?? [];
+      const entries = await getScheduleFn({ query: { userId: effectiveUserId } });
 
       if (!effectiveUserId || !effectiveRole) {
-        return entries;
+        return entries as unknown as ScheduleEntry[];
       }
 
-      return filterScheduleForUser(entries, effectiveUserId, effectiveRole);
+      return filterScheduleForUser(entries as any, effectiveUserId, effectiveRole) as unknown as ScheduleEntry[];
     },
     enabled: !!effectiveUserId,
   });
@@ -47,15 +52,8 @@ export function useCreateScheduleEntry() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async (newEntry: TablesInsert<'schedule_entries'>) => {
-      const { data, error } = await supabase
-        .from('schedule_entries')
-        .insert(newEntry)
-        .select()
-        .single();
-
-      if (error) throw error;
-      return data;
+    mutationFn: async (newEntry: any) => {
+      return await createScheduleFn({ data: newEntry });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['schedule-entries'] });
@@ -73,16 +71,8 @@ export function useUpdateScheduleEntry() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async ({ id, ...updates }: TablesUpdate<'schedule_entries'> & { id: string }) => {
-      const { data, error } = await supabase
-        .from('schedule_entries')
-        .update(updates)
-        .eq('id', id)
-        .select()
-        .single();
-
-      if (error) throw error;
-      return data;
+    mutationFn: async ({ id, ...updates }: any) => {
+      return await updateScheduleFn({ id, updates });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['schedule-entries'] });
@@ -101,9 +91,7 @@ export function useDeleteScheduleEntry() {
 
   return useMutation({
     mutationFn: async (id: string) => {
-      const { error } = await supabase.from('schedule_entries').delete().eq('id', id);
-
-      if (error) throw error;
+      await deleteScheduleFn({ id });
       return id;
     },
     onSuccess: () => {
@@ -111,3 +99,4 @@ export function useDeleteScheduleEntry() {
     },
   });
 }
+

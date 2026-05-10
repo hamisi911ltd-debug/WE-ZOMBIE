@@ -1,4 +1,4 @@
-﻿import { createFileRoute, Link, useParams } from "@tanstack/react-router";
+import { createFileRoute, Link, useParams } from "@tanstack/react-router";
 import { useState } from "react";
 import { useAuth } from "@/backend/lib/auth-context";
 import { useModules, useCreateModule, useUpdateModule, useReorderModules, type Module } from "@/frontend/hooks/use-modules";
@@ -230,7 +230,7 @@ function ModuleModal({
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const payload = { title, description: description || null, course_id: courseId };
+    const payload = { title, description: description || null, courseId };
 
     if (initial) {
       updateModule.mutate(

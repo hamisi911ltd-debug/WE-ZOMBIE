@@ -1,8 +1,14 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { supabase } from '@/backend/integrations/supabase/client';
-import type { Tables, TablesInsert, TablesUpdate } from '@/backend/integrations/supabase/types';
+import { getModulesFn, createModuleFn, updateModuleFn, reorderModulesFn } from '@/backend/lib/api-modules';
 
-export type Module = Tables<'modules'>;
+export type Module = {
+  id: string;
+  courseId: string;
+  title: string;
+  description: string | null;
+  position: number;
+  updatedAt: string | null;
+};
 
 /**
  * Fetches modules for a given course, ordered by position ascending.
@@ -13,14 +19,8 @@ export function useModules(courseId: string) {
   return useQuery({
     queryKey: ['modules', courseId],
     queryFn: async (): Promise<Module[]> => {
-      const { data, error } = await supabase
-        .from('modules')
-        .select('*')
-        .eq('course_id', courseId)
-        .order('position', { ascending: true });
-
-      if (error) throw error;
-      return data ?? [];
+      const data = await getModulesFn({ data: courseId });
+      return data as unknown as Module[];
     },
     enabled: !!courseId,
   });
@@ -36,18 +36,11 @@ export function useCreateModule() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async (newModule: TablesInsert<'modules'>) => {
-      const { data, error } = await supabase
-        .from('modules')
-        .insert(newModule)
-        .select()
-        .single();
-
-      if (error) throw error;
-      return data;
+    mutationFn: async (newModule: any) => {
+      return await createModuleFn({ data: newModule });
     },
-    onSuccess: (data) => {
-      queryClient.invalidateQueries({ queryKey: ['modules', data.course_id] });
+    onSuccess: (data: any) => {
+      queryClient.invalidateQueries({ queryKey: ['modules', data.courseId] });
     },
   });
 }
@@ -62,19 +55,11 @@ export function useUpdateModule() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async ({ id, ...updates }: TablesUpdate<'modules'> & { id: string }) => {
-      const { data, error } = await supabase
-        .from('modules')
-        .update(updates)
-        .eq('id', id)
-        .select()
-        .single();
-
-      if (error) throw error;
-      return data;
+    mutationFn: async ({ id, ...updates }: any) => {
+      return await updateModuleFn({ data: { id, ...updates } });
     },
-    onSuccess: (data) => {
-      queryClient.invalidateQueries({ queryKey: ['modules', data.course_id] });
+    onSuccess: (data: any) => {
+      queryClient.invalidateQueries({ queryKey: ['modules', data.courseId] });
     },
   });
 }
@@ -95,25 +80,11 @@ export function useReorderModules() {
 
   return useMutation({
     mutationFn: async ({ courseId, items }: ReorderModulesInput) => {
-      const updates = await Promise.all(
-        items.map(({ id, position }) =>
-          supabase
-            .from('modules')
-            .update({ position })
-            .eq('id', id)
-            .eq('course_id', courseId)
-            .select()
-            .single(),
-        ),
-      );
-
-      const firstError = updates.find((r) => r.error);
-      if (firstError?.error) throw firstError.error;
-
-      return updates.map((r) => r.data);
+      return await reorderModulesFn({ data: { courseId, items } });
     },
     onSuccess: (_, { courseId }) => {
       queryClient.invalidateQueries({ queryKey: ['modules', courseId] });
     },
   });
 }
+

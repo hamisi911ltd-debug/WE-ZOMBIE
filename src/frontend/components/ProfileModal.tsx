@@ -4,7 +4,7 @@ import { toast } from "sonner";
 import { LogOut, UserCircle, X } from "lucide-react";
 import { useAuth } from "@/backend/lib/auth-context";
 import { useProfile, useUpdateProfile } from "@/frontend/hooks/use-profile";
-import { supabase } from "@/backend/integrations/supabase/client";
+import { getNotificationPrefsFn, updateNotificationPrefsFn } from "@/backend/lib/api-profile";
 import * as DialogPrimitive from "@radix-ui/react-dialog";
 
 interface ProfileModalProps {
@@ -32,7 +32,7 @@ export function ProfileModal({ open, onOpenChange }: ProfileModalProps) {
 
   const [synced, setSynced] = useState(false);
   if (profile && !synced) {
-    setFullName(profile.full_name ?? "");
+    setFullName(profile.fullName ?? "");
     setPhone(profile.phone ?? "");
     setSynced(true);
   }
@@ -40,15 +40,10 @@ export function ProfileModal({ open, onOpenChange }: ProfileModalProps) {
   const loadPrefs = async () => {
     if (!userId || prefsLoaded) return;
     try {
-      const { data, error } = await supabase
-        .from("notification_preferences")
-        .select("email_reminders")
-        .eq("user_id", userId)
-        .single();
-      // Silently ignore if table doesn't exist yet (PGRST116 = no rows, 42P01 = table missing)
-      if (!error && data) setEmailReminders(data.email_reminders);
+      const data = await getNotificationPrefsFn();
+      if (data) setEmailReminders(data.emailReminders);
     } catch {
-      // table not yet migrated — use default
+      // ignore
     }
     setPrefsLoaded(true);
   };
@@ -69,24 +64,14 @@ export function ProfileModal({ open, onOpenChange }: ProfileModalProps) {
     if (!userId) return;
     setLoadingPrefs(true);
     try {
-      const { error } = await supabase
-        .from("notification_preferences")
-        .upsert({ user_id: userId, email_reminders: emailReminders }, { onConflict: "user_id" });
-      if (error) {
-        // If table doesn't exist, show a friendly message instead of crashing
-        if (error.code === "42P01" || error.message?.includes("notification_preferences")) {
-          toast.info("Settings saved locally (database migration pending)");
-        } else {
-          toast.error(error.message);
-        }
-      } else {
-        toast.success("Settings saved");
-      }
+      await updateNotificationPrefsFn({ data: { emailReminders } });
+      toast.success("Settings saved");
     } catch {
       toast.info("Settings saved locally");
     }
     setLoadingPrefs(false);
   };
+
 
   const handleLogout = async () => {
     await signOut();

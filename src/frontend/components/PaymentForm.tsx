@@ -1,4 +1,4 @@
-﻿import { useState, useRef } from "react";
+import { useState, useRef } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -7,14 +7,13 @@ import { Upload, X } from "lucide-react";
 import * as DialogPrimitive from "@radix-ui/react-dialog";
 import { useCreatePayment, useUpdatePayment } from "@/frontend/hooks/use-payments";
 import { useStudents } from "@/frontend/hooks/use-students";
-import { supabase } from "@/backend/integrations/supabase/client";
 import { useAuth } from "@/backend/lib/auth-context";
 import type { Payment } from "@/frontend/hooks/use-payments";
 
 const paymentSchema = z.object({
-  student_id: z.string().min(1, "Please select a student"),
+  userId: z.string().min(1, "Please select a student"),
   amount: z.coerce.number().positive("Amount must be greater than 0"),
-  due_date: z.string().min(1, "Due date is required"),
+  dueDate: z.string().min(1, "Due date is required"),
   status: z.enum(["pending", "paid", "overdue"]),
 });
 
@@ -44,9 +43,9 @@ export function PaymentForm({ open, onOpenChange, payment }: PaymentFormProps) {
   const form = useForm<PaymentFormValues>({
     resolver: zodResolver(paymentSchema),
     defaultValues: {
-      student_id: payment?.user_id ?? (isAdmin ? "" : (user?.id ?? "")),
+      userId: payment?.userId ?? (isAdmin ? "" : (user?.id ?? "")),
       amount: payment?.amount ?? 0,
-      due_date: payment?.due_date ?? "",
+      dueDate: payment?.dueDate ?? "",
       status: payment?.status ?? "pending",
     },
   });
@@ -60,13 +59,9 @@ export function PaymentForm({ open, onOpenChange, payment }: PaymentFormProps) {
   };
 
   const uploadProof = async (paymentId: string): Promise<string | null> => {
-    if (!proofFile) return null;
-    const ext = proofFile.name.split(".").pop();
-    const path = `payment-proofs/${paymentId}.${ext}`;
-    const { error } = await supabase.storage.from("documents").upload(path, proofFile, { upsert: true });
-    if (error) { toast.error(`Upload failed: ${error.message}`); return null; }
-    const { data } = supabase.storage.from("documents").getPublicUrl(path);
-    return data.publicUrl;
+    // TODO: Implement Cloudflare R2 upload
+    console.log("Proof upload requested for", paymentId, proofFile?.name);
+    return null;
   };
 
   const handleClose = () => { form.reset(); setProofFile(null); onOpenChange(false); };
@@ -75,15 +70,15 @@ export function PaymentForm({ open, onOpenChange, payment }: PaymentFormProps) {
     setIsUploading(true);
     try {
       if (isEditing && payment) {
-        let proofUrl = payment.proof_url;
+        let proofUrl = payment.proofUrl;
         if (proofFile) proofUrl = await uploadProof(payment.id);
-        await updatePayment.mutateAsync({ id: payment.id, amount: values.amount, due_date: values.due_date, status: values.status, ...(proofUrl !== undefined && { proof_url: proofUrl }) });
+        await updatePayment.mutateAsync({ id: payment.id, amount: values.amount, dueDate: values.dueDate, status: values.status, ...(proofUrl !== undefined && { proofUrl: proofUrl }) });
         toast.success("Payment updated");
       } else {
-        const created = await createPayment.mutateAsync({ user_id: values.student_id, amount: values.amount, due_date: values.due_date, status: values.status });
+        const created = await createPayment.mutateAsync({ userId: values.userId, amount: values.amount, dueDate: values.dueDate, status: values.status });
         if (proofFile && created) {
           const proofUrl = await uploadProof(created.id);
-          if (proofUrl) await updatePayment.mutateAsync({ id: created.id, proof_url: proofUrl });
+          if (proofUrl) await updatePayment.mutateAsync({ id: created.id, proofUrl: proofUrl });
         }
         toast.success("Payment created");
       }
@@ -121,11 +116,11 @@ export function PaymentForm({ open, onOpenChange, payment }: PaymentFormProps) {
             {isAdmin && (
               <div>
                 <label className={labelClass}>Student</label>
-                <select {...form.register("student_id")} className={inputClass}>
+                <select {...form.register("userId")} className={inputClass}>
                   <option value="">Select a student…</option>
-                  {students.map((s) => <option key={s.id} value={s.id}>{s.full_name ?? s.id}</option>)}
+                  {students.map((s) => <option key={s.id} value={s.id}>{s.fullName ?? s.id}</option>)}
                 </select>
-                {form.formState.errors.student_id && <p className={errorClass}>{form.formState.errors.student_id.message}</p>}
+                {form.formState.errors.userId && <p className={errorClass}>{form.formState.errors.userId.message}</p>}
               </div>
             )}
 
@@ -137,8 +132,8 @@ export function PaymentForm({ open, onOpenChange, payment }: PaymentFormProps) {
 
             <div>
               <label className={labelClass}>Due Date</label>
-              <input {...form.register("due_date")} type="date" className={inputClass} />
-              {form.formState.errors.due_date && <p className={errorClass}>{form.formState.errors.due_date.message}</p>}
+              <input {...form.register("dueDate")} type="date" className={inputClass} />
+              {form.formState.errors.dueDate && <p className={errorClass}>{form.formState.errors.dueDate.message}</p>}
             </div>
 
             <div>

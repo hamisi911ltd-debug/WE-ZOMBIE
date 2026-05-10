@@ -56,7 +56,7 @@ function AuthLayout() {
   ] as const;
 
   const roleLabel = isAdmin ? "Administrator" : isInstructor ? "Instructor" : "Student";
-  const userName = user?.user_metadata?.full_name ?? user?.email ?? "User";
+  const userName = user?.fullName ?? user?.email ?? "User";
   const userInitials = userName.split(" ").map((n: string) => n[0]).join("").slice(0, 2).toUpperCase();
 
   return (

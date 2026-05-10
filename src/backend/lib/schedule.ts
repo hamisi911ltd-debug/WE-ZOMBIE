@@ -2,11 +2,11 @@ import type { AppRole } from '../types/domain';
 
 export type ScheduleEntry = {
   id: string;
-  instructor_id: string;
-  student_id: string | null;
-  scheduled_date: string;
-  start_time: string;
-  end_time: string;
+  instructorId: string;
+  studentId: string | null;
+  scheduledDate: string;
+  startTime: string;
+  endTime: string;
 };
 
 /**
@@ -18,11 +18,11 @@ export type ScheduleEntry = {
  * Requirements: 7.2
  */
 export function hasScheduleConflict(entryA: ScheduleEntry, entryB: ScheduleEntry): boolean {
-  if (entryA.scheduled_date !== entryB.scheduled_date) {
+  if (entryA.scheduledDate !== entryB.scheduledDate) {
     return false;
   }
 
-  return entryA.start_time < entryB.end_time && entryB.start_time < entryA.end_time;
+  return entryA.startTime < entryB.endTime && entryB.startTime < entryA.endTime;
 }
 
 /**
@@ -44,11 +44,11 @@ export function filterScheduleForUser(
   }
 
   if (role === 'student') {
-    return entries.filter((entry) => entry.student_id === userId);
+    return entries.filter((entry) => entry.studentId === userId);
   }
 
   // instructor
-  return entries.filter((entry) => entry.instructor_id === userId);
+  return entries.filter((entry) => entry.instructorId === userId);
 }
 
 /**
@@ -63,7 +63,7 @@ export function getNextLesson(entries: ScheduleEntry[], now: Date): ScheduleEntr
   let nextTime: Date | null = null;
 
   for (const entry of entries) {
-    const entryTime = new Date(`${entry.scheduled_date}T${entry.start_time}`);
+    const entryTime = new Date(`${entry.scheduledDate}T${entry.startTime}`);
 
     if (entryTime <= now) {
       continue;

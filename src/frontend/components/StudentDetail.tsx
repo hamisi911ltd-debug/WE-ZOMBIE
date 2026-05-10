@@ -1,11 +1,10 @@
-﻿import { useRef, useState } from "react";
+import { useRef, useState } from "react";
 import { toast } from "sonner";
 import { UserCircle, Loader2, BookOpen, CreditCard, FileImage, X } from "lucide-react";
 import { useProfile, useUpdateProfile } from "@/frontend/hooks/use-profile";
 import { useEnrollments } from "@/frontend/hooks/use-enrollments";
 import { usePayments } from "@/frontend/hooks/use-payments";
 import { useCourses } from "@/frontend/hooks/use-courses";
-import { supabase } from "@/backend/integrations/supabase/client";
 import * as DialogPrimitive from "@radix-ui/react-dialog";
 
 const MAX_FILE_SIZE_BYTES = 10 * 1024 * 1024;
@@ -48,13 +47,8 @@ export function StudentDetail({ studentId, open, onOpenChange }: StudentDetailPr
 
     setUploading(true);
     try {
-      const fileExt = file.name.split(".").pop() ?? "jpg";
-      const filePath = `${studentId}/avatar.${fileExt}`;
-      const { error: uploadError } = await supabase.storage.from("avatars").upload(filePath, file, { upsert: true });
-      if (uploadError) throw uploadError;
-      const { data: publicUrlData } = supabase.storage.from("avatars").getPublicUrl(filePath);
-      await updateProfile.mutateAsync({ userId: studentId, updates: { avatar_url: publicUrlData.publicUrl } });
-      toast.success("Identity document uploaded.");
+      // TODO: Implement Cloudflare R2 upload
+      toast.info("Identity document upload pending R2 integration.");
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Upload failed.");
     } finally {
@@ -97,17 +91,17 @@ export function StudentDetail({ studentId, open, onOpenChange }: StudentDetailPr
                     <UserCircle className="size-3.5" /> Profile
                   </h3>
                   <div className="flex items-start gap-4">
-                    {profile?.avatar_url ? (
-                      <img src={profile.avatar_url} alt="Avatar" className="size-14 rounded-full object-cover" style={{ border: "2px solid #e2e8f0" }} />
+                    {profile?.avatarUrl ? (
+                      <img src={profile.avatarUrl} alt="Avatar" className="size-14 rounded-full object-cover" style={{ border: "2px solid #e2e8f0" }} />
                     ) : (
                       <div className="flex size-14 shrink-0 items-center justify-center rounded-full" style={{ background: "linear-gradient(135deg, #8b1a1a, #1e3a8a)" }}>
                         <UserCircle className="size-7 text-white" />
                       </div>
                     )}
                     <dl className="flex-1 space-y-1 text-sm">
-                      <div className="flex gap-2"><dt className="w-16 shrink-0 text-gray-400">Name</dt><dd className="font-semibold text-gray-900">{profile?.full_name ?? "—"}</dd></div>
+                      <div className="flex gap-2"><dt className="w-16 shrink-0 text-gray-400">Name</dt><dd className="font-semibold text-gray-900">{profile?.fullName ?? "—"}</dd></div>
                       <div className="flex gap-2"><dt className="w-16 shrink-0 text-gray-400">Phone</dt><dd className="text-gray-700">{profile?.phone ?? "—"}</dd></div>
-                      <div className="flex gap-2"><dt className="w-16 shrink-0 text-gray-400">Joined</dt><dd className="text-gray-700">{profile?.created_at ? formatDate(profile.created_at) : "—"}</dd></div>
+                      <div className="flex gap-2"><dt className="w-16 shrink-0 text-gray-400">Joined</dt><dd className="text-gray-700">{profile?.createdAt ? formatDate(profile.createdAt) : "—"}</dd></div>
                     </dl>
                   </div>
                 </section>
@@ -126,8 +120,8 @@ export function StudentDetail({ studentId, open, onOpenChange }: StudentDetailPr
                       {enrollments.map((e) => (
                         <li key={e.id} className="flex items-center justify-between rounded-lg p-3" style={{ background: "#f8fafc", border: "1px solid #e2e8f0" }}>
                           <div>
-                            <p className="text-sm font-semibold text-gray-900">{courseMap.get(e.course_id) ?? "Unknown Course"}</p>
-                            <p className="text-xs text-gray-400">Enrolled {formatDate(e.enrolled_at)}</p>
+                            <p className="text-sm font-semibold text-gray-900">{courseMap.get(e.courseId) ?? "Unknown Course"}</p>
+                            <p className="text-xs text-gray-400">Enrolled {formatDate(e.createdAt)}</p>
                           </div>
                           <span className={`badge ${e.status === "active" ? "badge-green" : e.status === "completed" ? "badge-blue" : "badge-red"}`}>{e.status}</span>
                         </li>
@@ -151,11 +145,11 @@ export function StudentDetail({ studentId, open, onOpenChange }: StudentDetailPr
                         <li key={p.id} className="flex items-center justify-between rounded-lg p-3" style={{ background: "#f8fafc", border: "1px solid #e2e8f0" }}>
                           <div>
                             <p className="text-sm font-semibold text-gray-900">{formatCurrency(p.amount)}</p>
-                            <p className="text-xs text-gray-400">Due {formatDate(p.due_date)}</p>
+                            <p className="text-xs text-gray-400">Due {formatDate(p.dueDate)}</p>
                           </div>
                           <div className="flex items-center gap-2">
                             <span className={`badge ${p.status === "paid" ? "badge-green" : p.status === "pending" ? "badge-amber" : "badge-red"}`}>{p.status}</span>
-                            {p.proof_url && <a href={p.proof_url} target="_blank" rel="noopener noreferrer" className="text-xs font-medium hover:underline" style={{ color: "#1d4ed8" }}>Proof</a>}
+                            {p.proofUrl && <a href={p.proofUrl} target="_blank" rel="noopener noreferrer" className="text-xs font-medium hover:underline" style={{ color: "#1d4ed8" }}>Proof</a>}
                           </div>
                         </li>
                       ))}
@@ -170,11 +164,11 @@ export function StudentDetail({ studentId, open, onOpenChange }: StudentDetailPr
                   <h3 className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-gray-400 mb-3">
                     <FileImage className="size-3.5" /> Identity Documents
                   </h3>
-                  {profile?.avatar_url && (
+                  {profile?.avatarUrl && (
                     <div className="mb-3">
                       <p className="mb-1 text-xs text-gray-400">Current document:</p>
-                      <a href={profile.avatar_url} target="_blank" rel="noopener noreferrer">
-                        <img src={profile.avatar_url} alt="Document" className="h-20 w-auto rounded-lg object-cover hover:opacity-80 transition-opacity" style={{ border: "1px solid #e2e8f0" }} />
+                      <a href={profile.avatarUrl} target="_blank" rel="noopener noreferrer">
+                        <img src={profile.avatarUrl} alt="Document" className="h-20 w-auto rounded-lg object-cover hover:opacity-80 transition-opacity" style={{ border: "1px solid #e2e8f0" }} />
                       </a>
                     </div>
                   )}

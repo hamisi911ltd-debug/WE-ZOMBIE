@@ -6,11 +6,11 @@ import {
   useCreateCourse,
   useUpdateCourse,
   useArchiveCourse,
+  useDeleteCourse,
   type Course,
 } from "@/frontend/hooks/use-courses";
 import { Plus, GraduationCap, Pencil, Archive, Eye, Search, Trash2 } from "lucide-react";
 import { toast } from "sonner";
-import { supabase } from "@/backend/integrations/supabase/client";
 
 export const Route = createFileRoute("/_authenticated/courses/")({
   component: CoursesPage,
@@ -110,6 +110,7 @@ function CoursesPage() {
 
   const { data: courses = [], isLoading } = useCourses();
   const archiveCourse = useArchiveCourse();
+  const deleteCourse = useDeleteCourse();
 
   const [creating, setCreating] = useState(false);
   const [editing, setEditing] = useState<Course | null>(null);
@@ -124,15 +125,12 @@ function CoursesPage() {
   };
 
   const handleDelete = async (courseId: string) => {
-    const { error } = await supabase.from("courses").delete().eq("id", courseId);
-    if (error) {
-      toast.error(error.message);
-    } else {
-      toast.success("Course deleted");
-      // Invalidate via archive hook's queryClient (reuse pattern)
-      archiveCourse.reset();
-    }
+    deleteCourse.mutate(courseId, {
+      onSuccess: () => toast.success("Course deleted"),
+      onError: (err) => toast.error(err.message),
+    });
   };
+
 
   // Unique categories for filter dropdown
   const categories = Array.from(

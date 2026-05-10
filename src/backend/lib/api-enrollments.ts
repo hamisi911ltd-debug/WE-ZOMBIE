@@ -34,7 +34,7 @@ export const createEnrollmentFn = createServerFn({ method: "POST" })
     const newEnrollment = {
       ...data,
       id,
-      enrolledAt: data.enrolled_at ?? new Date().toISOString(),
+      enrolledAt: data.enrolledAt ?? new Date().toISOString(),
       status: data.status ?? "active",
     };
     await db.insert(enrollments).values(newEnrollment).run();

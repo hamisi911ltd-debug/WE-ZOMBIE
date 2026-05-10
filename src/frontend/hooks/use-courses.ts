@@ -1,8 +1,18 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '@/backend/lib/auth-context';
-import { getCoursesFn, createCourseFn, updateCourseFn, archiveCourseFn } from '@/backend/lib/api-courses';
+import { getCoursesFn, createCourseFn, updateCourseFn, archiveCourseFn, deleteCourseFn } from '@/backend/lib/api-courses';
 
-export type Course = any; // You can refine this with the schema type
+export type Course = {
+  id: string;
+  title: string;
+  description: string | null;
+  category: string | null;
+  imageUrl: string | null;
+  archived: boolean;
+  createdAt: string;
+  updatedAt: string;
+  createdBy: string;
+};
 
 export function useCourses() {
   const { user } = useAuth();
@@ -54,3 +64,17 @@ export function useArchiveCourse() {
     },
   });
 }
+
+export function useDeleteCourse() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (courseId: string) => {
+      return await deleteCourseFn({ data: courseId });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['courses'] });
+    },
+  });
+}
+

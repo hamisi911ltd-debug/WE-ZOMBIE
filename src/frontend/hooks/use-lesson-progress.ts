@@ -1,12 +1,15 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { supabase } from '@/backend/integrations/supabase/client';
-import type { Tables, TablesInsert } from '@/backend/integrations/supabase/types';
+import { getLessonProgressFn, markLessonCompleteFn } from '@/backend/lib/api-progress';
 
-export type LessonProgress = Tables<'lesson_progress'>;
+export type LessonProgress = {
+  userId: string;
+  lessonId: string;
+  completed: boolean;
+  completedAt: string | null;
+};
 
 /**
  * Fetches all lesson_progress records for a user for lessons in a given course.
- * Resolves lesson IDs by joining lessons → modules → courses, then fetches progress.
  *
  * Implements Requirements 9.2, 9.3
  */
@@ -14,38 +17,8 @@ export function useLessonProgress(userId: string, courseId: string) {
   return useQuery({
     queryKey: ['lesson-progress', userId, courseId],
     queryFn: async (): Promise<LessonProgress[]> => {
-      // Get all modules for the course
-      const { data: modules, error: modulesError } = await supabase
-        .from('modules')
-        .select('id')
-        .eq('course_id', courseId);
-
-      if (modulesError) throw modulesError;
-
-      const moduleIds = (modules ?? []).map((m) => m.id);
-      if (moduleIds.length === 0) return [];
-
-      // Get all lessons in those modules
-      const { data: lessons, error: lessonsError } = await supabase
-        .from('lessons')
-        .select('id')
-        .in('module_id', moduleIds);
-
-      if (lessonsError) throw lessonsError;
-
-      const lessonIds = (lessons ?? []).map((l) => l.id);
-      if (lessonIds.length === 0) return [];
-
-      // Fetch progress records for those lessons for this user
-      const { data: progress, error: progressError } = await supabase
-        .from('lesson_progress')
-        .select('*')
-        .eq('user_id', userId)
-        .in('lesson_id', lessonIds);
-
-      if (progressError) throw progressError;
-
-      return progress ?? [];
+      const data = await getLessonProgressFn({ data: { userId, courseId } });
+      return data as unknown as LessonProgress[];
     },
     enabled: !!userId && !!courseId,
   });
@@ -67,24 +40,11 @@ export function useMarkLessonComplete() {
 
   return useMutation({
     mutationFn: async ({ userId, lessonId }: MarkLessonCompleteInput) => {
-      const record: TablesInsert<'lesson_progress'> = {
-        user_id: userId,
-        lesson_id: lessonId,
-        completed: true,
-        completed_at: new Date().toISOString(),
-      };
-
-      const { data, error } = await supabase
-        .from('lesson_progress')
-        .upsert(record, { onConflict: 'user_id,lesson_id' })
-        .select()
-        .single();
-
-      if (error) throw error;
-      return data;
+      return await markLessonCompleteFn({ data: { userId, lessonId } });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['lesson-progress'] });
     },
   });
 }
+

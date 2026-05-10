@@ -1,11 +1,11 @@
-﻿import type { LessonContentType } from "@/backend/types/domain";
+import type { LessonContentType } from "@/backend/types/domain";
 
 interface LessonViewerProps {
   lesson: {
     title: string;
     body: string | null;
-    content_type: LessonContentType;
-    content_url: string | null;
+    contentType: LessonContentType;
+    contentUrl: string | null;
   };
 }
 
@@ -16,9 +16,9 @@ interface LessonViewerProps {
  * Implements Requirements 9.1, 9.5
  */
 export function LessonViewer({ lesson }: LessonViewerProps) {
-  const { body, content_type, content_url } = lesson;
+  const { body, contentType, contentUrl } = lesson;
 
-  if (content_type === "text") {
+  if (contentType === "text") {
     return (
       <div className="admin-card rounded-xl p-6">
         {body ? (
@@ -32,13 +32,13 @@ export function LessonViewer({ lesson }: LessonViewerProps) {
     );
   }
 
-  if (content_type === "video") {
+  if (contentType === "video") {
     return (
       <div className="admin-card rounded-xl p-4">
-        {content_url ? (
+        {contentUrl ? (
           <video
             controls
-            src={content_url}
+            src={contentUrl}
             className="w-full rounded-xl"
           >
             Your browser does not support the video tag.
@@ -52,18 +52,18 @@ export function LessonViewer({ lesson }: LessonViewerProps) {
     );
   }
 
-  if (content_type === "pdf") {
+  if (contentType === "pdf") {
     return (
       <div className="admin-card rounded-xl p-4 space-y-3">
-        {content_url ? (
+        {contentUrl ? (
           <>
             <iframe
-              src={content_url}
+              src={contentUrl}
               className="w-full h-96 rounded-xl border border-gray-200"
               title={lesson.title}
             />
             <a
-              href={content_url}
+              href={contentUrl}
               download
               className="inline-flex items-center gap-2 text-sm font-medium text-red-800 hover:underline"
             >

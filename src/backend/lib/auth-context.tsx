@@ -4,8 +4,8 @@ import { getSessionFn, logoutFn } from "./auth-server";
 export type AppRole = "admin" | "instructor" | "student";
 
 interface AuthCtx {
-  session: { id: string, email: string } | null;
-  user: { id: string, email: string } | null;
+  session: { id: string, email: string, fullName: string | null } | null;
+  user: { id: string, email: string, fullName: string | null } | null;
   roles: AppRole[];
   loading: boolean;
   isAuthenticated: boolean;
@@ -18,7 +18,7 @@ interface AuthCtx {
 const Ctx = createContext<AuthCtx | null>(null);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [session, setSession] = useState<{ id: string, email: string } | null>(null);
+  const [session, setSession] = useState<{ id: string, email: string, fullName: string | null } | null>(null);
   const [roles, setRoles] = useState<AppRole[]>([]);
   const [loading, setLoading] = useState(true);
 

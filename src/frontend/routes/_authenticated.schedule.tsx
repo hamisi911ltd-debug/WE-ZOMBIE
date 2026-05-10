@@ -5,9 +5,10 @@ import { useAuth } from "@/backend/lib/auth-context";
 import { useScheduleEntries, useDeleteScheduleEntry } from "@/frontend/hooks/use-schedule";
 import { ScheduleEntryForm } from "@/frontend/components/ScheduleEntryForm";
 import { Button } from "@/frontend/components/ui/button";
-import { supabase } from "@/backend/integrations/supabase/client";
 import { toast } from "sonner";
 import type { ScheduleEntry } from "@/frontend/hooks/use-schedule";
+import { getModulesFn } from "@/backend/lib/api-modules";
+import { getProfilesByIdsFn } from "@/backend/lib/api-profile";
 
 export const Route = createFileRoute("/_authenticated/schedule")({
   component: SchedulePage,
@@ -36,37 +37,32 @@ function SchedulePage() {
   useEffect(() => {
     if (!entries.length) return;
 
-    const moduleIds = [...new Set(entries.map((e) => e.module_id).filter(Boolean) as string[])];
-    const studentIds = [...new Set(entries.map((e) => e.student_id).filter(Boolean) as string[])];
+    const moduleIds = [...new Set(entries.map((e) => e.moduleId).filter(Boolean) as string[])];
+    const studentIds = [...new Set(entries.map((e) => e.studentId).filter(Boolean) as string[])];
 
     if (moduleIds.length > 0) {
-      supabase
-        .from("modules")
-        .select("id, title")
-        .in("id", moduleIds)
-        .then(({ data }) => {
-          if (data) {
-            const map: Record<string, string> = {};
-            for (const m of data) map[m.id] = m.title;
-            setModuleNames(map);
+      getModulesFn().then((data) => {
+        if (data) {
+          const map: Record<string, string> = {};
+          for (const m of data) {
+            if (moduleIds.includes(m.id)) map[m.id] = m.title;
           }
-        });
+          setModuleNames(map);
+        }
+      });
     }
 
     if (studentIds.length > 0) {
-      supabase
-        .from("profiles")
-        .select("id, full_name")
-        .in("id", studentIds)
-        .then(({ data }) => {
-          if (data) {
-            const map: Record<string, string> = {};
-            for (const p of data) map[p.id] = p.full_name ?? p.id.slice(0, 8) + "…";
-            setStudentNames(map);
-          }
-        });
+      getProfilesByIdsFn({ data: studentIds }).then((data) => {
+        if (data) {
+          const map: Record<string, string> = {};
+          for (const p of data) map[p.id] = p.fullName ?? p.id.slice(0, 8) + "…";
+          setStudentNames(map);
+        }
+      });
     }
   }, [entries]);
+
 
   const openCreate = () => {
     setEditingEntry(undefined);
@@ -90,7 +86,7 @@ function SchedulePage() {
 
   // Group entries by date
   const grouped = entries.reduce<Record<string, ScheduleEntry[]>>((acc, entry) => {
-    const date = entry.scheduled_date;
+    const date = entry.scheduledDate;
     if (!acc[date]) acc[date] = [];
     acc[date].push(entry);
     return acc;
@@ -134,11 +130,11 @@ function SchedulePage() {
 
   const renderEntries = (dateEntries: ScheduleEntry[], dateStr: string) =>
     dateEntries
-      .sort((a, b) => a.start_time.localeCompare(b.start_time))
+      .sort((a, b) => a.startTime.localeCompare(b.startTime))
       .map((entry) => {
         const isDeleting = confirmDeleteId === entry.id;
-        const moduleName = entry.module_id ? moduleNames[entry.module_id] : null;
-        const studentName = entry.student_id ? studentNames[entry.student_id] : null;
+        const moduleName = entry.moduleId ? moduleNames[entry.moduleId] : null;
+        const studentName = entry.studentId ? studentNames[entry.studentId] : null;
 
         return (
           <div key={entry.id} className="flex items-center justify-between px-5 py-4 hover:bg-gray-50 transition-colors">
@@ -148,12 +144,12 @@ function SchedulePage() {
                 style={{ color: dateStr === todayStr ? "#b45309" : "#1d4ed8" }}
               >
                 <Clock className="size-3.5 shrink-0" />
-                {formatTime(entry.start_time)} – {formatTime(entry.end_time)}
+                {formatTime(entry.startTime)} – {formatTime(entry.endTime)}
               </div>
               <div className="space-y-0.5 min-w-0">
                 {moduleName ? (
                   <p className="text-sm font-semibold text-gray-900 truncate">{moduleName}</p>
-                ) : entry.module_id ? (
+                ) : entry.moduleId ? (
                   <p className="text-sm text-gray-500">Module session</p>
                 ) : (
                   <p className="text-sm text-gray-400">General session</p>
@@ -161,13 +157,13 @@ function SchedulePage() {
                 {isAdmin && (
                   <div className="flex items-center gap-1 text-xs text-gray-400">
                     <User className="size-3 shrink-0" />
-                    Instructor: {entry.instructor_id.slice(0, 8)}…
+                    Instructor: {entry.instructorId.slice(0, 8)}…
                   </div>
                 )}
-                {entry.student_id && isAdmin && (
+                {entry.studentId && isAdmin && (
                   <div className="flex items-center gap-1 text-xs text-gray-400">
                     <User className="size-3 shrink-0" />
-                    Student: {studentName ?? entry.student_id.slice(0, 8) + "…"}
+                    Student: {studentName ?? entry.studentId.slice(0, 8) + "…"}
                   </div>
                 )}
               </div>

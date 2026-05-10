@@ -137,10 +137,10 @@ function PaymentsPage() {
                   const isDeleting = confirmDeleteId === payment.id;
                   return (
                     <tr key={payment.id} style={overdue ? { background: "#fef2f2" } : {}}>
-                      {isAdmin && <td className="font-medium">{getStudentName(payment.user_id)}</td>}
+                      {isAdmin && <td className="font-medium">{getStudentName(payment.userId)}</td>}
                       <td className="font-mono font-bold">${Number(payment.amount).toFixed(2)}</td>
                       <td className="text-gray-500">
-                        {new Date(payment.due_date).toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" })}
+                        {new Date(payment.dueDate).toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" })}
                       </td>
                       <td>
                         <div className="flex items-center gap-2 flex-wrap">
@@ -158,7 +158,7 @@ function PaymentsPage() {
                         <div className="flex items-center gap-1 flex-wrap">
                           <ReceiptDownload
                             payment={payment}
-                            studentName={isAdmin ? getStudentName(payment.user_id) : (user?.user_metadata?.full_name ?? user?.email ?? "Student")}
+                            studentName={isAdmin ? getStudentName(payment.userId) : (user?.fullName ?? user?.email ?? "Student")}
                           />
                           {isAdmin && payment.status === "pending" && (
                             <Button variant="ghost" size="sm" onClick={() => handleMarkPaid(payment)} disabled={updatePayment.isPending} className="text-green-700 hover:text-green-800 hover:bg-green-50 text-xs gap-1">
@@ -170,8 +170,8 @@ function PaymentsPage() {
                               <Pencil className="size-4" />
                             </Button>
                           )}
-                          {payment.proof_url && (
-                            <a href={payment.proof_url} target="_blank" rel="noopener noreferrer" className="text-xs font-medium hover:underline" style={{ color: "#1d4ed8" }}>
+                          {payment.proofUrl && (
+                            <a href={payment.proofUrl} target="_blank" rel="noopener noreferrer" className="text-xs font-medium hover:underline" style={{ color: "#1d4ed8" }}>
                               Proof
                             </a>
                           )}

@@ -65,19 +65,19 @@ function StudentsContent() {
     { id: string; courseId: string; status: string }
   >();
   for (const e of enrollments) {
-    const existing = enrollmentByStudent.get(e.user_id);
+    const existing = enrollmentByStudent.get(e.userId);
     if (!existing || e.status === "active") {
-      enrollmentByStudent.set(e.user_id, {
+      enrollmentByStudent.set(e.userId, {
         id: e.id,
-        courseId: e.course_id,
+        courseId: e.courseId,
         status: e.status,
       });
     }
   }
 
-  const startEdit = (student: { id: string; full_name: string | null; phone?: string | null }) => {
+  const startEdit = (student: { id: string; fullName: string | null; phone?: string | null }) => {
     setEditingStudentId(student.id);
-    setEditName(student.full_name ?? "");
+    setEditName(student.fullName ?? "");
     setEditPhone((student as any).phone ?? "");
   };
 
@@ -177,7 +177,7 @@ function StudentsContent() {
                         <input value={editName} onChange={(e) => setEditName(e.target.value)} className="form-input py-1" autoFocus />
                       ) : (
                         <button onClick={() => setSelectedStudentId(student.id)} className="text-left font-semibold hover:underline" style={{ color: "#8b1a1a" }}>
-                          {student.full_name ?? "—"}
+                          {student.fullName ?? "—"}
                         </button>
                       )}
                     </td>

@@ -1,4 +1,4 @@
-﻿import { useState } from "react";
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -7,7 +7,7 @@ import { X } from "lucide-react";
 import * as DialogPrimitive from "@radix-ui/react-dialog";
 import { useCourses } from "@/frontend/hooks/use-courses";
 import { useCreateEnrollment } from "@/frontend/hooks/use-enrollments";
-import { supabase } from "@/backend/integrations/supabase/client";
+import { adminCreateUserFn } from "@/backend/lib/auth-server";
 
 const step1Schema = z.object({
   fullName: z.string().min(2, "Full name must be at least 2 characters"),
@@ -46,23 +46,15 @@ export function EnrollStudentForm({ open, onOpenChange }: EnrollStudentFormProps
   const handleStep1 = async (values: Step1Values) => {
     setIsSubmitting(true);
     try {
-      const tempPassword = crypto.randomUUID();
-      const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
-        email: values.email,
-        password: tempPassword,
-        options: { data: { full_name: values.fullName } },
+      const res = await adminCreateUserFn({
+        data: {
+          email: values.email,
+          fullName: values.fullName,
+          role: "student",
+        },
       });
-      if (signUpError) throw signUpError;
-      const userId = signUpData.user?.id;
-      if (!userId) throw new Error("Failed to create user account");
-
-      const { error: roleError } = await supabase.from("user_roles").insert({ user_id: userId, role: "student" });
-      if (roleError) throw roleError;
-
-      const { error: profileError } = await supabase.from("profiles").insert({ id: userId, full_name: values.fullName });
-      if (profileError) throw profileError;
-
-      setNewUserId(userId);
+      
+      setNewUserId(res.userId);
       toast.success("Student account created");
       setStep(2);
     } catch (err) {
@@ -75,7 +67,7 @@ export function EnrollStudentForm({ open, onOpenChange }: EnrollStudentFormProps
   const handleStep2 = async (values: Step2Values) => {
     if (!newUserId) return;
     createEnrollment.mutate(
-      { user_id: newUserId, course_id: values.courseId, status: "active" },
+      { userId: newUserId, courseId: values.courseId, status: "active" },
       {
         onSuccess: () => { toast.success("Student enrolled in course"); handleClose(); },
         onError: (err) => toast.error(err.message),

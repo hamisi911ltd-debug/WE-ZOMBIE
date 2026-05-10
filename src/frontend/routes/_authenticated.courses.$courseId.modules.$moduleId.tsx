@@ -1,4 +1,4 @@
-﻿import { createFileRoute, Link, useParams } from "@tanstack/react-router";
+import { createFileRoute, Link, useParams } from "@tanstack/react-router";
 import { useState } from "react";
 import { useAuth } from "@/backend/lib/auth-context";
 import { useLessons, useCreateLesson, useUpdateLesson, useReorderLessons, type Lesson } from "@/frontend/hooks/use-lessons";
@@ -62,13 +62,13 @@ function ModuleDetail() {
     );
   }
 
-  const filtered = lessons.filter((l) => filter === "all" || l.lesson_type === filter);
+  const filtered = lessons.filter((l) => filter === "all" || l.lessonType === filter);
 
   const iconFor = (t: LessonContentType) =>
     t === "video" ? Video : t === "pdf" ? FileText : BookOpen;
 
   const isCompleted = (lessonId: string) =>
-    progressRecords.some((p) => p.lesson_id === lessonId && p.completed);
+    progressRecords.some((p) => p.lessonId === lessonId && p.completed);
 
   const handleMoveUp = (index: number) => {
     if (index === 0) return;
@@ -160,7 +160,7 @@ function ModuleDetail() {
       ) : (
         <ul className="space-y-3">
           {filtered.map((l, i) => {
-            const Icon = iconFor(l.content_type as LessonContentType);
+            const Icon = iconFor(l.contentType as LessonContentType);
             const completed = isCompleted(l.id);
             return (
               <li
@@ -183,12 +183,12 @@ function ModuleDetail() {
                         className="rounded-full px-2 py-0.5 text-xs font-semibold capitalize"
                         style={{
                           background:
-                            l.lesson_type === "theory"
+                            l.lessonType === "theory"
                               ? "oklch(0.46 0.16 295 / 0.25)"
                               : "oklch(0.72 0.19 22 / 0.25)",
                         }}
                       >
-                        {l.lesson_type}
+                        {l.lessonType}
                       </span>
                       {isStudent && completed && (
                         <span className="rounded-full bg-green-500/20 px-2 py-0.5 text-xs font-semibold text-green-400">
@@ -199,15 +199,15 @@ function ModuleDetail() {
                     {l.body && (
                       <p className="mt-1 line-clamp-2 text-sm text-gray-500">{l.body}</p>
                     )}
-                    {l.content_url && !isStudent && (
+                    {l.contentUrl && !isStudent && (
                       <a
-                        href={l.content_url}
+                        href={l.contentUrl}
                         target="_blank"
                         rel="noreferrer"
                         className="mt-2 inline-block text-sm font-semibold text-red-800 hover:underline"
                         onClick={(e) => e.stopPropagation()}
                       >
-                        Open {l.content_type} →
+                        Open {l.contentType} →
                       </a>
                     )}
                   </div>
@@ -295,12 +295,12 @@ function LessonModal({
 
   const [title, setTitle] = useState(initial?.title ?? "");
   const [body, setBody] = useState(initial?.body ?? "");
-  const [contentUrl, setContentUrl] = useState(initial?.content_url ?? "");
+  const [contentUrl, setContentUrl] = useState(initial?.contentUrl ?? "");
   const [contentType, setContentType] = useState<LessonContentType>(
-    (initial?.content_type as LessonContentType) ?? "text",
+    (initial?.contentType as LessonContentType) ?? "text",
   );
   const [lessonType, setLessonType] = useState<LessonType>(
-    (initial?.lesson_type as LessonType) ?? "theory",
+    (initial?.lessonType as LessonType) ?? "theory",
   );
 
   const saving = createLesson.isPending || updateLesson.isPending;
@@ -310,10 +310,10 @@ function LessonModal({
     const payload = {
       title,
       body: body || null,
-      content_url: contentUrl || null,
-      content_type: contentType,
-      lesson_type: lessonType,
-      module_id: moduleId,
+      contentUrl: contentUrl || null,
+      contentType: contentType,
+      lessonType: lessonType,
+      moduleId: moduleId,
     };
 
     if (initial) {
