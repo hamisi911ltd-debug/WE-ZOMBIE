@@ -6,10 +6,16 @@
 // You can pass additional config via defineConfig({ vite: { ... } }) if needed.
 import { defineConfig } from "@lovable.dev/vite-tanstack-config";
 
-// Redirect TanStack Start's bundled server entry to src/server.ts (our SSR error wrapper).
-// @cloudflare/vite-plugin builds from this — wrangler.jsonc main alone is insufficient.
+// After restructuring src/ into src/frontend/ and src/backend/, we need to tell
+// TanStack Start where the router entry, routes directory, and generated route tree live.
+// All paths under `router` are resolved relative to `srcDirectory` (default: "src").
 export default defineConfig({
   tanstackStart: {
+    router: {
+      entry: "frontend/router",
+      routesDirectory: "frontend/routes",
+      generatedRouteTree: "frontend/routeTree.gen.ts",
+    },
     server: { entry: "server" },
   },
 });
