@@ -3,7 +3,6 @@ import { useState } from "react";
 import { CreditCard, AlertCircle, Pencil, Plus, Trash2, CheckCircle2, Clock, XCircle } from "lucide-react";
 import { useAuth } from "@/backend/lib/auth-context";
 import { usePayments, useUpdatePayment, useDeletePayment } from "@/frontend/hooks/use-payments";
-import { useStudents } from "@/frontend/hooks/use-students";
 import { isOverdue } from "@/backend/lib/payments";
 import { ReceiptDownload } from "@/frontend/components/ReceiptDownload";
 import { PaymentForm } from "@/frontend/components/PaymentForm";
@@ -48,7 +47,6 @@ function PaymentsPage() {
   const isAdmin = hasRole("admin");
 
   const { data: payments = [], isLoading } = usePayments();
-  const { data: students = [] } = useStudents();
   const updatePayment = useUpdatePayment();
   const deletePayment = useDeletePayment();
 
@@ -57,9 +55,6 @@ function PaymentsPage() {
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
 
   const now = new Date();
-
-  const studentNameMap = Object.fromEntries(students.map((s) => [s.id, s.full_name ?? s.id]));
-  const getStudentName = (userId: string) => studentNameMap[userId] ?? userId.slice(0, 8) + "…";
 
   const handleMarkPaid = (payment: Payment) => {
     updatePayment.mutate({ id: payment.id, status: "paid" }, {
@@ -99,9 +94,9 @@ function PaymentsPage() {
       {/* Summary stats */}
       {!isLoading && payments.length > 0 && (
         <div className="grid gap-4 sm:grid-cols-3">
-          <SummaryCard label="Total Paid" value={`$${totalPaid.toFixed(2)}`} icon={CheckCircle2} bg="#dcfce7" color="#15803d" />
-          <SummaryCard label="Pending" value={`$${totalPending.toFixed(2)}`} icon={Clock} bg="#fef3c7" color="#b45309" />
-          <SummaryCard label="Overdue" value={`$${totalOverdue.toFixed(2)}`} icon={XCircle} bg="#fee2e2" color="#b91c1c" />
+          <SummaryCard label="Total Paid" value={`KES ${totalPaid.toLocaleString()}`} icon={CheckCircle2} bg="#dcfce7" color="#15803d" />
+          <SummaryCard label="Pending" value={`KES ${totalPending.toLocaleString()}`} icon={Clock} bg="#fef3c7" color="#b45309" />
+          <SummaryCard label="Overdue" value={`KES ${totalOverdue.toLocaleString()}`} icon={XCircle} bg="#fee2e2" color="#b91c1c" />
         </div>
       )}
 
@@ -126,6 +121,7 @@ function PaymentsPage() {
                 <tr>
                   {isAdmin && <th>Student</th>}
                   <th>Amount</th>
+                  <th>Method</th>
                   <th>Due Date</th>
                   <th>Status</th>
                   <th>Actions</th>
@@ -135,10 +131,12 @@ function PaymentsPage() {
                 {payments.map((payment) => {
                   const overdue = isOverdue(payment, now);
                   const isDeleting = confirmDeleteId === payment.id;
+                  const sName = (payment as any).studentName || "Unknown Student";
                   return (
                     <tr key={payment.id} style={overdue ? { background: "#fef2f2" } : {}}>
-                      {isAdmin && <td className="font-medium">{getStudentName(payment.userId)}</td>}
-                      <td className="font-mono font-bold">${Number(payment.amount).toFixed(2)}</td>
+                      {isAdmin && <td className="font-medium">{sName}</td>}
+                      <td className="font-mono font-bold">KES {Number(payment.amount).toLocaleString()}</td>
+                      <td className="text-xs uppercase text-slate-500 font-semibold">{(payment as any).paymentMethod || "—"}</td>
                       <td className="text-gray-500">
                         {new Date(payment.dueDate).toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" })}
                       </td>

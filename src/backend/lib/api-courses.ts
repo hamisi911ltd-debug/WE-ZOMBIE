@@ -8,7 +8,7 @@ export const getCoursesFn = createServerFn({ method: "GET" }).handler(async () =
   const session = await getSessionFn();
   if (!session) return [];
 
-  const db = getDb(process.env);
+  const db = getDb();
   const isAdmin = session.roles.includes("admin") || session.roles.includes("instructor");
 
   if (isAdmin) {
@@ -36,7 +36,7 @@ export const createCourseFn = createServerFn({ method: "POST" })
       throw new Error("Unauthorized");
     }
 
-    const db = getDb(process.env);
+    const db = getDb();
     const id = crypto.randomUUID();
     const newCourse = {
       ...data,
@@ -59,7 +59,7 @@ export const updateCourseFn = createServerFn({ method: "POST" })
       throw new Error("Unauthorized");
     }
 
-    const db = getDb(process.env);
+    const db = getDb();
     const { id, ...updates } = data;
     
     await db.update(courses).set({
@@ -79,7 +79,7 @@ export const archiveCourseFn = createServerFn({ method: "POST" })
       throw new Error("Unauthorized");
     }
 
-    const db = getDb(process.env);
+    const db = getDb();
     await db.update(courses).set({
       archived: true,
       updatedAt: new Date().toISOString()
@@ -96,7 +96,7 @@ export const deleteCourseFn = createServerFn({ method: "POST" })
       throw new Error("Unauthorized");
     }
 
-    const db = getDb(process.env);
+    const db = getDb();
     await db.delete(courses).where(eq(courses.id, id)).run();
     return { success: true };
   });

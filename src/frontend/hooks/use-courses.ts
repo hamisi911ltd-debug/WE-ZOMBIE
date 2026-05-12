@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '@/backend/lib/auth-context';
-import { getCoursesFn, createCourseFn, updateCourseFn, archiveCourseFn, deleteCourseFn } from '@/backend/lib/api-courses';
+import { coursesAPI } from '@/lib/api-client';
 
 export type Course = {
   id: string;
@@ -20,7 +20,7 @@ export function useCourses() {
   return useQuery({
     queryKey: ['courses'],
     queryFn: async () => {
-      return await getCoursesFn();
+      return await coursesAPI.getAll();
     },
     enabled: !!user,
   });
@@ -31,7 +31,7 @@ export function useCreateCourse() {
 
   return useMutation({
     mutationFn: async (newCourse: any) => {
-      return await createCourseFn({ data: newCourse });
+      return await coursesAPI.create(newCourse);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['courses'] });
@@ -44,7 +44,7 @@ export function useUpdateCourse() {
 
   return useMutation({
     mutationFn: async (updates: any) => {
-      return await updateCourseFn({ data: updates });
+      return await coursesAPI.update(updates.id, updates);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['courses'] });
@@ -57,7 +57,7 @@ export function useArchiveCourse() {
 
   return useMutation({
     mutationFn: async (courseId: string) => {
-      return await archiveCourseFn({ data: courseId });
+      return await coursesAPI.update(courseId, { archived: true });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['courses'] });
@@ -70,7 +70,7 @@ export function useDeleteCourse() {
 
   return useMutation({
     mutationFn: async (courseId: string) => {
-      return await deleteCourseFn({ data: courseId });
+      return await coursesAPI.delete(courseId);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['courses'] });

@@ -1,0 +1,43 @@
+═══════════════════════════════════════════════════════════
+    IMMACURATE DRIVING SCHOOL - ADMIN LOGIN CREDENTIALS
+═══════════════════════════════════════════════════════════
+
+🌐 LOGIN URL
+   https://immacurate.co.ke/login
+
+📧 EMAIL
+   admin@immacurate.co.ke
+
+🔑 PASSWORD
+   Immacurate@2026
+
+🎯 ADMIN DASHBOARD
+   https://immacurate.co.ke/admin/dashboard
+
+📚 COURSES MANAGEMENT
+   https://immacurate.co.ke/admin/courses
+
+═══════════════════════════════════════════════════════════
+
+✅ WHAT'S WORKING:
+   • Real logo (logo.jpeg) used throughout
+   • Improved side navigation (wider, gradient, shadows)
+   • Landing page updated with Immacurate info
+   • All branding changed to Immacurate Driving School
+   • Admin courses management (Full CRUD)
+   • 7 default courses loaded
+   • Mobile responsive
+
+📞 CONTACT INFO (Updated on Landing Page):
+   • Phone: 0721 171911
+   • Email: immacuratedriving77@gmail.com
+   • Location: Juja Arcade, 1st Floor
+   • P.O Box: 717-01001 Kalimoni
+
+═══════════════════════════════════════════════════════════
+
+🚀 DEPLOYED AND LIVE!
+   Status: ✅ All updates complete
+   Date: May 11, 2026
+
+═══════════════════════════════════════════════════════════

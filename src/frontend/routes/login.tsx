@@ -1,12 +1,13 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useAuth } from "@/backend/lib/auth-context";
-import { loginFn } from "@/backend/lib/auth-server";
+import { authAPI } from "@/lib/api-client";
 import { toast } from "sonner";
 import { Car, Eye, EyeOff, ArrowLeft } from "lucide-react";
 
 export const Route = createFileRoute("/login")({
   component: LoginPage,
+  ssr: false, // Disable SSR
 });
 
 function LoginPage() {
@@ -18,20 +19,49 @@ function LoginPage() {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    if (isAuthenticated) nav({ to: "/dashboard" });
-  }, [isAuthenticated, nav]);
+    console.log("Login page - isAuthenticated:", isAuthenticated, "loading:", loading);
+    if (!loading && isAuthenticated) {
+      console.log("Already authenticated, redirecting to dashboard");
+      window.location.href = "/dashboard";
+    }
+  }, [isAuthenticated, loading]);
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
+    
     try {
-      await loginFn({ data: { email, password } });
-      await checkSession(); // Update auth context
+      console.log("Starting login...");
+      
+      // Login API call
+      await authAPI.login(email, password);
+      console.log("Login successful");
+      
+      // Update session and wait for it to complete
+      await checkSession();
+      console.log("Session updated");
+      
       toast.success("Welcome back!");
-      nav({ to: "/dashboard" });
+      
+      // Use a more reliable redirect method
+      console.log("Redirecting to dashboard...");
+      
+      // Try multiple redirect methods for maximum compatibility
+      try {
+        // Method 1: TanStack Router navigation
+        await nav({ to: "/dashboard", replace: true });
+        console.log("TanStack navigation successful");
+      } catch (navError) {
+        console.log("TanStack navigation failed, trying window.location");
+        // Method 2: Force page redirect as fallback
+        setTimeout(() => {
+          window.location.href = "/dashboard";
+        }, 100);
+      }
+      
     } catch (error) {
+      console.error("Login error:", error);
       toast.error("Invalid credentials. Please check your email and password.");
-    } finally {
       setLoading(false);
     }
   };
@@ -122,28 +152,33 @@ function LoginPage() {
 
           <form onSubmit={submit} className="mt-8 space-y-5">
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-1.5">
+              <label htmlFor="email" className="block text-sm font-semibold text-gray-700 mb-1.5">
                 Email address
               </label>
               <input
+                id="email"
+                name="email"
                 type="email"
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="you@example.com"
                 className="form-input"
+                autoComplete="email"
               />
             </div>
 
             <div>
               <div className="flex items-center justify-between mb-1.5">
-                <label className="text-sm font-semibold text-gray-700">Password</label>
+                <label htmlFor="password" className="text-sm font-semibold text-gray-700">Password</label>
                 <button type="button" className="text-xs font-medium hover:underline" style={{ color: "#8b1a1a" }}>
                   Forgot password?
                 </button>
               </div>
               <div className="relative">
                 <input
+                  id="password"
+                  name="password"
                   type={showPassword ? "text" : "password"}
                   required
                   minLength={6}
@@ -151,11 +186,13 @@ function LoginPage() {
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••"
                   className="form-input pr-10"
+                  autoComplete="current-password"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
                   className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                  aria-label={showPassword ? "Hide password" : "Show password"}
                 >
                   {showPassword ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
                 </button>
@@ -177,6 +214,34 @@ function LoginPage() {
                 "Sign in to Portal"
               )}
             </button>
+            
+            {/* Debug information and manual navigation */}
+            {isAuthenticated && (
+              <div className="mt-4 p-4 bg-green-50 border border-green-200 rounded-lg">
+                <div className="flex items-center gap-2 mb-2">
+                  <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                  <p className="text-sm font-semibold text-green-700">✅ Login successful!</p>
+                </div>
+                <p className="text-xs text-green-600 mb-3">
+                  If the page doesn't redirect automatically, click below:
+                </p>
+                <div className="space-y-2">
+                  <Link 
+                    to="/dashboard" 
+                    className="block w-full text-center bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-4 rounded-lg transition-colors"
+                  >
+                    Go to Dashboard →
+                  </Link>
+                  <button
+                    type="button"
+                    onClick={() => window.location.href = "/dashboard"}
+                    className="block w-full text-center bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg transition-colors"
+                  >
+                    Force Redirect to Dashboard
+                  </button>
+                </div>
+              </div>
+            )}
           </form>
 
           <div className="mt-8 rounded-xl p-4" style={{ background: "#f8fafc", border: "1px solid #e2e8f0" }}>

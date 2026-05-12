@@ -1,12 +1,13 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useAuth } from "@/backend/lib/auth-context";
-import { signupFn } from "@/backend/lib/auth-server";
+import { authAPI } from "@/lib/api-client";
 import { toast } from "sonner";
 import { Car, Eye, EyeOff, CheckCircle } from "lucide-react";
 
 export const Route = createFileRoute("/signup")({
   component: SignupPage,
+  ssr: false, // Disable SSR
 });
 
 function SignupPage() {
@@ -27,7 +28,7 @@ function SignupPage() {
     setLoading(true);
     
     try {
-      await signupFn({ data: { email, password, fullName } });
+      await authAPI.signup(email, password, fullName);
       await checkSession();
       toast.success("Account created successfully! Welcome.");
       nav({ to: "/dashboard" });
@@ -119,39 +120,47 @@ function SignupPage() {
 
           <form onSubmit={submit} className="mt-8 space-y-5">
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-1.5">
+              <label htmlFor="fullName" className="block text-sm font-semibold text-gray-700 mb-1.5">
                 Full name
               </label>
               <input
+                id="fullName"
+                name="fullName"
                 type="text"
                 required
                 value={fullName}
                 onChange={(e) => setFullName(e.target.value)}
                 placeholder="John Smith"
                 className="form-input"
+                autoComplete="name"
               />
             </div>
 
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-1.5">
+              <label htmlFor="email" className="block text-sm font-semibold text-gray-700 mb-1.5">
                 Email address
               </label>
               <input
+                id="email"
+                name="email"
                 type="email"
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="you@example.com"
                 className="form-input"
+                autoComplete="email"
               />
             </div>
 
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-1.5">
+              <label htmlFor="password" className="block text-sm font-semibold text-gray-700 mb-1.5">
                 Password
               </label>
               <div className="relative">
                 <input
+                  id="password"
+                  name="password"
                   type={showPassword ? "text" : "password"}
                   required
                   minLength={6}
@@ -159,11 +168,13 @@ function SignupPage() {
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="Min. 6 characters"
                   className="form-input pr-10"
+                  autoComplete="new-password"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
                   className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                  aria-label={showPassword ? "Hide password" : "Show password"}
                 >
                   {showPassword ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
                 </button>

@@ -9,7 +9,7 @@ export const getModulesFn = createServerFn({ method: "POST" })
   .handler(async ({ data: courseId }) => {
     const session = await getSessionFn();
     if (!session) throw new Error("Unauthorized");
-    const db = getDb(process.env);
+    const db = getDb();
     if (courseId) {
       return await db.select().from(modules).where(eq(modules.courseId, courseId)).orderBy(asc(modules.position)).all();
     }
@@ -21,7 +21,7 @@ export const createModuleFn = createServerFn({ method: "POST" })
   .handler(async ({ data }) => {
     const session = await getSessionFn();
     if (!session || !session.roles.includes("admin")) throw new Error("Unauthorized");
-    const db = getDb(process.env);
+    const db = getDb();
     const id = crypto.randomUUID();
     const newModule = { ...data, id };
     await db.insert(modules).values(newModule).run();
@@ -33,7 +33,7 @@ export const updateModuleFn = createServerFn({ method: "POST" })
   .handler(async ({ data }) => {
     const session = await getSessionFn();
     if (!session || !session.roles.includes("admin")) throw new Error("Unauthorized");
-    const db = getDb(process.env);
+    const db = getDb();
     const { id, ...updates } = data;
     await db.update(modules).set(updates).where(eq(modules.id, id)).run();
     return await db.select().from(modules).where(eq(modules.id, id)).get();
@@ -44,7 +44,7 @@ export const reorderModulesFn = createServerFn({ method: "POST" })
   .handler(async ({ data: { courseId, items } }) => {
     const session = await getSessionFn();
     if (!session || !session.roles.includes("admin")) throw new Error("Unauthorized");
-    const db = getDb(process.env);
+    const db = getDb();
 
     for (const item of items) {
       await db.update(modules).set({ position: item.position }).where(eq(modules.id, item.id)).run();

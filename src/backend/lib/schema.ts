@@ -7,6 +7,9 @@ export const profiles = sqliteTable('profiles', {
   avatarUrl: text('avatar_url'),
   fullName: text('full_name'),
   phone: text('phone'),
+  idNumber: text('id_number'), // National ID or Passport number
+  dateOfBirth: text('date_of_birth'),
+  address: text('address'),
   createdAt: text('created_at').notNull(),
   updatedAt: text('updated_at').notNull(),
 });
@@ -58,6 +61,8 @@ export const enrollments = sqliteTable('enrollments', {
   courseId: text('course_id').notNull().references(() => courses.id),
   status: text('status').notNull(),
   enrolledAt: text('enrolled_at').notNull(),
+  createdAt: text('created_at').notNull(),
+  updatedAt: text('updated_at').notNull(),
 });
 
 export const lessonProgress = sqliteTable('lesson_progress', {
@@ -85,10 +90,15 @@ export const scheduleEntries = sqliteTable('schedule_entries', {
 export const payments = sqliteTable('payments', {
   id: text('id').primaryKey(),
   userId: text('user_id').notNull().references(() => profiles.id),
-  amount: integer('amount').notNull(),
+  amount: integer('amount').notNull(), // Amount in KES (cents)
   status: text('status').notNull(), // 'pending', 'paid', 'overdue'
+  paymentMethod: text('payment_method'), // 'bank', 'mpesa', 'cash'
+  transactionRef: text('transaction_ref'), // M-Pesa code or bank reference
   dueDate: text('due_date').notNull(),
+  paidDate: text('paid_date'),
   proofUrl: text('proof_url'),
+  recordedBy: text('recorded_by'), // Admin who recorded the payment
+  notes: text('notes'),
   createdAt: text('created_at').notNull(),
   updatedAt: text('updated_at').notNull(),
 });

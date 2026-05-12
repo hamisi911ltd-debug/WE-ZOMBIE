@@ -1,0 +1,48 @@
+═══════════════════════════════════════════════════════════
+    ✅ WORKING ADMIN LOGIN CREDENTIALS
+═══════════════════════════════════════════════════════════
+
+🌐 LOGIN URL
+   https://immacurate.co.ke/login
+
+📧 EMAIL
+   admin@immacurate.co.ke
+
+🔑 PASSWORD
+   Admin123!
+
+═══════════════════════════════════════════════════════════
+
+✅ FIXES APPLIED:
+   • Admin account recreated with working password
+   • Logo size reduced (was too large)
+   • All old admin accounts removed
+   • Password tested and verified
+
+📏 LOGO SIZES (Reduced):
+   • Sidebar: 192px (was full width)
+   • Mobile header: 40px (was 48px)
+   • Landing page: 48px (was 56px)
+   • Footer: 48px (was 64px)
+   • About page: max-width 512px (was 768px)
+
+🎯 AFTER LOGIN:
+   Go to: https://immacurate.co.ke/admin/dashboard
+   Then click "Courses" in sidebar
+
+═══════════════════════════════════════════════════════════
+
+🚀 STATUS: DEPLOYED AND WORKING
+   Date: May 11, 2026
+   Version: Fixed Login + Reduced Logo
+
+═══════════════════════════════════════════════════════════
+
+⚠️ IMPORTANT:
+   If login still doesn't work, clear your browser cache:
+   • Chrome: Ctrl+Shift+Delete
+   • Then select "Cached images and files"
+   • Click "Clear data"
+   • Try logging in again
+
+═══════════════════════════════════════════════════════════

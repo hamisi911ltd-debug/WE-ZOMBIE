@@ -7,11 +7,12 @@ import { X } from "lucide-react";
 import * as DialogPrimitive from "@radix-ui/react-dialog";
 import { useCourses } from "@/frontend/hooks/use-courses";
 import { useCreateEnrollment } from "@/frontend/hooks/use-enrollments";
-import { adminCreateUserFn } from "@/backend/lib/auth-server";
+import { usersAPI } from "@/lib/api-client";
 
 const step1Schema = z.object({
   fullName: z.string().min(2, "Full name must be at least 2 characters"),
   email: z.string().email("Please enter a valid email address"),
+  phone: z.string().min(10, "Please enter a valid phone number"),
 });
 
 const step2Schema = z.object({
@@ -34,7 +35,10 @@ export function EnrollStudentForm({ open, onOpenChange }: EnrollStudentFormProps
   const { data: courses = [] } = useCourses();
   const createEnrollment = useCreateEnrollment();
 
-  const step1Form = useForm<Step1Values>({ resolver: zodResolver(step1Schema), defaultValues: { fullName: "", email: "" } });
+  const step1Form = useForm<Step1Values>({ 
+    resolver: zodResolver(step1Schema), 
+    defaultValues: { fullName: "", email: "", phone: "" } 
+  });
   const step2Form = useForm<Step2Values>({ resolver: zodResolver(step2Schema), defaultValues: { courseId: "" } });
 
   const handleClose = () => {
@@ -46,15 +50,15 @@ export function EnrollStudentForm({ open, onOpenChange }: EnrollStudentFormProps
   const handleStep1 = async (values: Step1Values) => {
     setIsSubmitting(true);
     try {
-      const res = await adminCreateUserFn({
-        data: {
-          email: values.email,
-          fullName: values.fullName,
-          role: "student",
-        },
+      const res = await usersAPI.create({
+        email: values.email,
+        fullName: values.fullName,
+        phone: values.phone,
+        role: "student",
+        password: values.phone, // Use phone as password for students
       });
       
-      setNewUserId(res.userId);
+      setNewUserId(res.id);
       toast.success("Student account created");
       setStep(2);
     } catch (err) {
@@ -106,16 +110,45 @@ export function EnrollStudentForm({ open, onOpenChange }: EnrollStudentFormProps
           {step === 1 ? (
             <form onSubmit={step1Form.handleSubmit(handleStep1)} className="p-6 space-y-4">
               <div>
-                <label className={labelClass}>Full Name</label>
-                <input {...step1Form.register("fullName")} placeholder="e.g. Jane Doe" className={inputClass} />
+                <label htmlFor="fullName" className={labelClass}>Full Name</label>
+                <input 
+                  id="fullName"
+                  {...step1Form.register("fullName")} 
+                  placeholder="e.g. Jane Doe" 
+                  className={inputClass}
+                  autoComplete="name"
+                />
                 {step1Form.formState.errors.fullName && <p className={errorClass}>{step1Form.formState.errors.fullName.message}</p>}
               </div>
               <div>
-                <label className={labelClass}>Email Address</label>
-                <input {...step1Form.register("email")} type="email" placeholder="student@example.com" className={inputClass} />
+                <label htmlFor="email" className={labelClass}>Email Address</label>
+                <input 
+                  id="email"
+                  {...step1Form.register("email")} 
+                  type="email" 
+                  placeholder="student@example.com" 
+                  className={inputClass}
+                  autoComplete="email"
+                />
                 {step1Form.formState.errors.email && <p className={errorClass}>{step1Form.formState.errors.email.message}</p>}
               </div>
-              <p className="text-xs text-gray-400">A confirmation email will be sent to the student to set their password.</p>
+              <div>
+                <label htmlFor="phone" className={labelClass}>Phone Number</label>
+                <input 
+                  id="phone"
+                  {...step1Form.register("phone")} 
+                  placeholder="e.g. 0712345678" 
+                  className={inputClass}
+                  autoComplete="tel"
+                />
+                {step1Form.formState.errors.phone && <p className={errorClass}>{step1Form.formState.errors.phone.message}</p>}
+              </div>
+              <div className="bg-blue-50 border border-blue-100 rounded-lg p-3">
+                <p className="text-xs text-blue-800 leading-relaxed">
+                  <strong>Account Access:</strong> The student will be able to log in using their 
+                  email address and their <strong>phone number</strong> as the initial password.
+                </p>
+              </div>
               <div className="flex justify-end gap-3 pt-2">
                 <button type="button" onClick={handleClose} className="btn-outline">Cancel</button>
                 <button type="submit" disabled={isSubmitting} className="btn-brand disabled:opacity-60">
@@ -126,8 +159,8 @@ export function EnrollStudentForm({ open, onOpenChange }: EnrollStudentFormProps
           ) : (
             <form onSubmit={step2Form.handleSubmit(handleStep2)} className="p-6 space-y-4">
               <div>
-                <label className={labelClass}>Assign to Course</label>
-                <select {...step2Form.register("courseId")} className={inputClass}>
+                <label htmlFor="courseId" className={labelClass}>Assign to Course</label>
+                <select id="courseId" {...step2Form.register("courseId")} className={inputClass}>
                   <option value="">Select a course…</option>
                   {courses.map((c) => <option key={c.id} value={c.id}>{c.title}</option>)}
                 </select>

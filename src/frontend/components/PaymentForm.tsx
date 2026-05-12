@@ -15,6 +15,10 @@ const paymentSchema = z.object({
   amount: z.coerce.number().positive("Amount must be greater than 0"),
   dueDate: z.string().min(1, "Due date is required"),
   status: z.enum(["pending", "paid", "overdue"]),
+  paymentMethod: z.string().optional(),
+  transactionRef: z.string().optional(),
+  notes: z.string().optional(),
+  paidDate: z.string().optional(),
 });
 
 type PaymentFormValues = z.infer<typeof paymentSchema>;
@@ -45,8 +49,12 @@ export function PaymentForm({ open, onOpenChange, payment }: PaymentFormProps) {
     defaultValues: {
       userId: payment?.userId ?? (isAdmin ? "" : (user?.id ?? "")),
       amount: payment?.amount ?? 0,
-      dueDate: payment?.dueDate ?? "",
+      dueDate: payment?.dueDate ?? new Date().toISOString().split('T')[0],
       status: payment?.status ?? "pending",
+      paymentMethod: (payment as any)?.paymentMethod ?? "cash",
+      transactionRef: (payment as any)?.transactionRef ?? "",
+      notes: (payment as any)?.notes ?? "",
+      paidDate: (payment as any)?.paidDate ?? "",
     },
   });
 
@@ -72,13 +80,32 @@ export function PaymentForm({ open, onOpenChange, payment }: PaymentFormProps) {
       if (isEditing && payment) {
         let proofUrl = payment.proofUrl;
         if (proofFile) proofUrl = await uploadProof(payment.id);
-        await updatePayment.mutateAsync({ id: payment.id, amount: values.amount, dueDate: values.dueDate, status: values.status, ...(proofUrl !== undefined && { proofUrl: proofUrl }) });
+        await updatePayment.mutateAsync({ 
+          id: payment.id, 
+          amount: values.amount, 
+          dueDate: values.dueDate, 
+          status: values.status,
+          paymentMethod: values.paymentMethod,
+          transactionRef: values.transactionRef,
+          notes: values.notes,
+          paidDate: values.status === 'paid' ? (values.paidDate || new Date().toISOString().split('T')[0]) : null,
+          ...(proofUrl !== undefined && { proofUrl: proofUrl }) 
+        });
         toast.success("Payment updated");
       } else {
-        const created = await createPayment.mutateAsync({ userId: values.userId, amount: values.amount, dueDate: values.dueDate, status: values.status });
+        const created = await createPayment.mutateAsync({ 
+          userId: values.userId, 
+          amount: values.amount, 
+          dueDate: values.dueDate, 
+          status: values.status,
+          paymentMethod: values.paymentMethod,
+          transactionRef: values.transactionRef,
+          notes: values.notes,
+          paidDate: values.status === 'paid' ? (values.paidDate || new Date().toISOString().split('T')[0]) : null,
+        });
         if (proofFile && created) {
-          const proofUrl = await uploadProof(created.id);
-          if (proofUrl) await updatePayment.mutateAsync({ id: created.id, proofUrl: proofUrl });
+          const proofUrl = await uploadProof((created as any).id);
+          if (proofUrl) await updatePayment.mutateAsync({ id: (created as any).id, proofUrl: proofUrl });
         }
         toast.success("Payment created");
       }
@@ -98,76 +125,130 @@ export function PaymentForm({ open, onOpenChange, payment }: PaymentFormProps) {
   return (
     <DialogPrimitive.Root open={open} onOpenChange={handleClose}>
       <DialogPrimitive.Portal>
-        <DialogPrimitive.Overlay className="fixed inset-0 z-50 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0" style={{ background: "rgba(15,23,42,0.50)" }} />
+        <DialogPrimitive.Overlay className="fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-sm transition-all" />
         <DialogPrimitive.Content
-          className="fixed left-1/2 top-1/2 z-50 w-full max-w-md -translate-x-1/2 -translate-y-1/2 duration-200 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95"
-          style={{ background: "#ffffff", borderRadius: "1rem", boxShadow: "0 20px 60px rgba(0,0,0,0.20)" }}
+          className="fixed left-1/2 top-1/2 z-50 w-full max-w-lg -translate-x-1/2 -translate-y-1/2 bg-white rounded-2xl shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200"
         >
-          <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
-            <DialogPrimitive.Title className="font-display text-lg font-bold text-gray-900">
-              {isEditing ? "Edit Payment" : "New Payment"}
+          <div className="flex items-center justify-between px-6 py-4 border-b bg-slate-50">
+            <DialogPrimitive.Title className="font-display text-lg font-bold text-slate-900">
+              {isEditing ? "Edit Payment" : "Manual Payment Entry"}
             </DialogPrimitive.Title>
-            <DialogPrimitive.Close className="rounded-lg p-1.5 text-gray-400 hover:bg-gray-100 hover:text-gray-600 transition-colors">
+            <DialogPrimitive.Close className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-200 hover:text-slate-600 transition-colors">
               <X className="size-4" />
             </DialogPrimitive.Close>
           </div>
 
-          <form onSubmit={form.handleSubmit(onSubmit)} className="p-6 space-y-4">
+          <form onSubmit={form.handleSubmit(onSubmit)} className="p-6 overflow-y-auto max-h-[80vh] space-y-5">
             {isAdmin && (
-              <div>
-                <label className={labelClass}>Student</label>
-                <select {...form.register("userId")} className={inputClass}>
-                  <option value="">Select a student…</option>
-                  {students.map((s) => <option key={s.id} value={s.id}>{s.fullName ?? s.id}</option>)}
-                </select>
-                {form.formState.errors.userId && <p className={errorClass}>{form.formState.errors.userId.message}</p>}
+              <div className="grid grid-cols-1 gap-4">
+                <div>
+                  <label htmlFor="userId" className={labelClass}>Student</label>
+                  <select id="userId" {...form.register("userId")} className={inputClass}>
+                    <option value="">Select a student…</option>
+                    {students.map((s) => <option key={s.id} value={s.id}>{s.fullName ?? s.email ?? s.id}</option>)}
+                  </select>
+                  {form.formState.errors.userId && <p className={errorClass}>{form.formState.errors.userId.message}</p>}
+                </div>
               </div>
             )}
 
-            <div>
-              <label className={labelClass}>Amount (USD)</label>
-              <input {...form.register("amount")} type="number" step="0.01" min="0" placeholder="0.00" className={inputClass} />
-              {form.formState.errors.amount && <p className={errorClass}>{form.formState.errors.amount.message}</p>}
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label htmlFor="amount" className={labelClass}>Amount (KES)</label>
+                <div className="relative">
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm font-semibold">KES</span>
+                  <input 
+                    id="amount"
+                    {...form.register("amount")} 
+                    type="number" 
+                    step="0.01" 
+                    min="0" 
+                    placeholder="0.00" 
+                    className={inputClass + " pl-12"}
+                    autoComplete="off"
+                  />
+                </div>
+                {form.formState.errors.amount && <p className={errorClass}>{form.formState.errors.amount.message}</p>}
+              </div>
+              <div>
+                <label htmlFor="status" className={labelClass}>Status</label>
+                <select id="status" {...form.register("status")} className={inputClass}>
+                  <option value="pending">Pending</option>
+                  <option value="paid">Paid</option>
+                  <option value="overdue">Overdue</option>
+                </select>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label htmlFor="dueDate" className={labelClass}>Due Date</label>
+                <input id="dueDate" {...form.register("dueDate")} type="date" className={inputClass} />
+                {form.formState.errors.dueDate && <p className={errorClass}>{form.formState.errors.dueDate.message}</p>}
+              </div>
+              <div>
+                <label htmlFor="paidDate" className={labelClass}>Paid Date (Optional)</label>
+                <input id="paidDate" {...form.register("paidDate")} type="date" className={inputClass} />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label htmlFor="paymentMethod" className={labelClass}>Payment Method</label>
+                <select id="paymentMethod" {...form.register("paymentMethod")} className={inputClass}>
+                  <option value="cash">Cash</option>
+                  <option value="mpesa">M-Pesa</option>
+                  <option value="bank">Bank Transfer</option>
+                  <option value="other">Other</option>
+                </select>
+              </div>
+              <div>
+                <label htmlFor="transactionRef" className={labelClass}>Transaction Ref</label>
+                <input 
+                  id="transactionRef"
+                  {...form.register("transactionRef")} 
+                  placeholder="e.g. QWE123RTY" 
+                  className={inputClass}
+                  autoComplete="off"
+                />
+              </div>
             </div>
 
             <div>
-              <label className={labelClass}>Due Date</label>
-              <input {...form.register("dueDate")} type="date" className={inputClass} />
-              {form.formState.errors.dueDate && <p className={errorClass}>{form.formState.errors.dueDate.message}</p>}
+              <label htmlFor="notes" className={labelClass}>Notes</label>
+              <textarea 
+                id="notes"
+                {...form.register("notes")} 
+                rows={2} 
+                className={inputClass + " resize-none"} 
+                placeholder="Add internal notes..." 
+              />
             </div>
 
-            <div>
-              <label className={labelClass}>Status</label>
-              <select {...form.register("status")} className={inputClass}>
-                <option value="pending">Pending</option>
-                <option value="paid">Paid</option>
-                <option value="overdue">Overdue</option>
-              </select>
-            </div>
-
-            <div>
+            <div className="pt-2">
               <label className={labelClass}>Payment Proof (PDF, max 10 MB)</label>
-              <div className="mt-1">
+              <div className="mt-2">
                 {proofFile ? (
-                  <div className="flex items-center gap-2 rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm">
-                    <span className="flex-1 truncate text-gray-700">{proofFile.name}</span>
-                    <button type="button" onClick={() => { setProofFile(null); if (fileInputRef.current) fileInputRef.current.value = ""; }} className="text-gray-400 hover:text-gray-600">
+                  <div className="flex items-center gap-2 rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm">
+                    <span className="flex-1 truncate font-medium text-slate-700">{proofFile.name}</span>
+                    <button type="button" onClick={() => { setProofFile(null); if (fileInputRef.current) fileInputRef.current.value = ""; }} className="text-slate-400 hover:text-red-500">
                       <X className="size-4" />
                     </button>
                   </div>
                 ) : (
-                  <button type="button" onClick={() => fileInputRef.current?.click()} className="flex w-full items-center gap-2 rounded-lg border border-dashed border-gray-300 bg-gray-50 px-3 py-3 text-sm text-gray-500 hover:bg-gray-100 transition-colors">
-                    <Upload className="size-4" /> Click to upload PDF proof
+                  <button type="button" onClick={() => fileInputRef.current?.click()} className="flex w-full flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed border-slate-200 bg-slate-50 px-6 py-6 text-sm text-slate-500 hover:border-slate-300 hover:bg-slate-100 transition-all">
+                    <Upload className="size-6 text-slate-400" />
+                    <span>Click to upload PDF receipt or proof</span>
                   </button>
                 )}
                 <input ref={fileInputRef} type="file" accept="application/pdf" onChange={handleFileChange} className="hidden" />
               </div>
             </div>
 
-            <div className="flex justify-end gap-3 pt-2">
-              <button type="button" onClick={handleClose} className="btn-outline">Cancel</button>
-              <button type="submit" disabled={isPending} className="btn-brand disabled:opacity-60">
-                {isPending ? "Saving…" : isEditing ? "Save Changes" : "Create Payment"}
+            <div className="flex justify-end gap-3 pt-4 border-t mt-6">
+              <button type="button" onClick={handleClose} className="px-4 py-2 text-sm font-semibold text-slate-600 hover:bg-slate-100 rounded-lg transition-colors">Cancel</button>
+              <button type="submit" disabled={isPending} className="px-6 py-2 text-sm font-bold text-white bg-red-800 hover:bg-red-900 rounded-lg shadow-lg shadow-red-900/20 disabled:opacity-50 transition-all">
+                {isPending ? "Processing..." : isEditing ? "Update Payment" : "Save Payment"}
               </button>
             </div>
           </form>

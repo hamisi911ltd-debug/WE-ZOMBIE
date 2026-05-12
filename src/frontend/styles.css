@@ -1,15 +1,9 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 @import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Poppins:wght@600;700;800;900&display=swap");
 
-@import "tailwindcss" source(none);
-@source "../";
-@import "tw-animate-css";
-
-@custom-variant dark (&:is(.dark *));
-
-@theme inline {
-  --font-sans: "Inter", ui-sans-serif, system-ui;
-  --font-display: "Poppins", ui-sans-serif, system-ui;
-
+:root {
   --radius-sm: 0.375rem;
   --radius-md: 0.5rem;
   --radius-lg: 0.75rem;
@@ -99,7 +93,6 @@
   --sidebar-ring: #8b1a1a;
 }
 
-@layer base {
   * {
     border-color: var(--color-border);
     box-sizing: border-box;
@@ -107,7 +100,7 @@
   html, body {
     font-family: var(--font-sans);
     -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
+    -moz-osx-osx-font-smoothing: grayscale;
   }
   body {
     background-color: var(--background);
@@ -118,9 +111,8 @@
     font-family: var(--font-display);
     letter-spacing: -0.02em;
   }
-}
 
-@layer components {
+
   /* ── Admin portal card ── */
   .admin-card {
     background: #ffffff;
@@ -392,4 +384,4 @@
     border-radius: 9999px;
     transition: width 0.5s ease;
   }
-}
+

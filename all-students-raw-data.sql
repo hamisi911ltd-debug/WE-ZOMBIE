@@ -1,0 +1,288 @@
+-- ALL STUDENT DATA EXTRACTED FROM HANDWRITTEN RECORDS
+-- Reading each image systematically and extracting all visible data
+
+-- PAGE 1 (05/2025)
+-- Faith Wambu Matinda - B2 - 11604 - 6000 + 6000 = 12000 - Cleared
+-- Kamau Jane Kamani - B2 - 12600 - 5000
+-- Grace Mwihaki Kamani - B2 - 12600 - 6000 + 3750 = 9750
+-- Bweyeire Njoka - B2 - 12600 - 6000
+-- Roseline Wanjiku - B2 - 12600 - 2000 + 1000 = 3000
+-- Veronica Olive Onditi - A - 9360 - 11000 + 1100 = 12100
+-- Fridah Mutiga - B - 12600 - 5000
+-- Esther Wambui - B2 - 12600 - 4000 + 7500 = 11500
+-- Antony Mwangi Cimaini - B½ - 8700 - 2000
+-- Charles Mwangi Rigiti - B½ - - 6000 + 2750 = 8750 - Cleared
+-- Hamisi Platini Kamau - B - 12600 - 5000
+-- Oscan Kalu - B - 9360 - 1000
+-- Jane Fauzi Wambua - B½ - - 6000
+-- Chrispin Ochieng - B - - 2000 + 5000 = 7000
+
+-- PAGE 2
+-- Christine Wambui - - - 48000
+-- Jemimah Kamilia - - - 48000
+-- Catherine Wanjiku - B½ - 8700 - 26000 + 2600 = 28600
+-- Nicholas Kipkoech - B½ - - 1300
+-- Moses Juma Kinyua - D - - 20000
+-- Teresiah Mwiti David - B2 - - 4850 + 5000 = 9850
+-- Dennis Mwangi Wanjiku - B - - 5000
+-- Liness Muigi - B½ - - 4500
+-- Kamiunga Wambui - - - 20000
+-- James Mwangi - B½ - - 1000
+-- Collins Kiprotich - A2 - - 2500
+-- Ann Mwangi Wanjiru - A2 - - 5300
+-- Romina Ochieng - B2 - - 900
+-- Fridah Kaminto - - - 1000
+-- Bernadine Wanjiku Mwangi - - - 2000
+
+-- PAGE 3
+-- Jane Esau Wambui - - - 6000
+-- Cherian Achieng - - - 5000
+-- Collins Mwangi - - - 5000
+-- Teresiah Wambi Njuguna - - - 2500 + 1500 = 4000
+-- Bob Mwetu Njuguna - - - 7500
+-- Fridah Kaminto David - - - 5000
+-- Pauline Wanjiku - B - - 26000
+-- James Njeru Mwangi - - - 1000 + 6700 = 7700
+-- Edith Mwangi Kuria - - - 5000 + 1000 = 6000
+-- Antony Ndungu - - - 5000
+-- David Ogallo - - - 10000
+-- Wesley Mutilini - - - 5000
+-- Scola Mwangi - - - 2600
+-- Munji Njomo - A2 - - 3000 + 1000 = 4000
+-- Antony Mwangi - - - 9600
+
+-- PAGE 4 (17/03/2025)
+-- Hlatini Wambu Mwangi - B2 - 12600 - 6000 + 4000 = 10000
+-- Karuku Joan Kamani - B2 - 12600 - 5000
+-- Kariuki Gakuru Mwangi - B+ - 12500 - 6000 + 3750 = 9750
+-- Bweyeire Njoka - B+ - 12600 - 6000
+-- Rose Lydia Wanjiku - B2 - 12600 - 2000 + 1000 = 3000 - Cleared
+-- Veronica Olive Onditi - B2 - 12600 - 11000 + 1600 = 12600 - Cleared
+-- Fridah Mutiga - B2 - 11600 - 5000
+-- Esther Wambui - B+ - - 4500 + 7600 = 12100 - Cleared
+-- Antony Mwangi Cimaini - B½ - - 2000
+-- Mwangi Charles Rigiti - B½ - - 6000 + 2750 = 8750 - Cleared
+-- Hamisi Platini Kibe - B - - 5000
+
+-- PAGE 5
+-- Jeremiah Mwangi Wanjiru - B - 12600 - 5000 + 6000 = 11000
+-- Victoria Odhiambo - B - 12600 - 50000
+-- Michael Mwangi - C - - 50000
+-- Ann Nduta Mwangi - B - 13600 - 10000 + 1600 = 11600
+-- Victor Mwangi - B½ - - 7700
+-- Charles Ngugi Njenga - B - 13600 - 5000
+-- Stanley Othieno - B - 13600 - 5000
+-- Michael Mwangi - B - 13600 - 8000
+-- Simon Ndegwa Njuguna - B - 13600 - 10000
+-- Josephine Wanjiru - B1 - 13600 - 500
+-- Ruth Karinge Kimiti - B2 - 13600 - 6000
+-- Lilian Ndegwa - B2 - - 3000
+-- James Kamau Gitu - B½ - - 2000
+
+-- PAGE 6
+-- Elias Njuguna Kamau - - - 9000 + 5000 = 14000
+-- Grace Njambi - - - 4000
+-- Aspen Njathi Aga - A - 12600 - 4000
+-- Christine Kanyua - - - 9500
+-- Kelvin Okeyo - A2 - - 2000 + 2000 = 4000
+-- Mary Wanjiku Wanjiru - B2 - - 5000 + 7000 = 12000
+-- Nectas Wanjiku Kimani - B2 - - 3000 + 3000 = 6000
+-- Anne Njoki - B2 - - 5000
+-- Levaine Kisia John - B2 - - 9000 + 3600 = 12600
+-- Philip Mwangi Njuguna - C - - 4000 + 3000 = 7000
+-- Esther Odhiambo - A - - 4000
+-- Geoffrey Othieno Ochieng - B - - 5000 + 4000 = 9000
+-- Mwangi Samson Mwai - B - - 9000 + 3600 = 12600
+-- Patricia Kamau - - - 1000 + 1000 = 2000
+
+-- PAGE 7
+-- Susan Wanjiku Kamila - B - 12600 - 40000
+-- Margaret Nduta - B½ - - 7000
+-- Keziah Nyambura - B2 - - 9000
+-- Ken Ndegwa - A2 - - 3500 + 1000 = 4500
+-- Mary Njoki Wanjiru - - - 1600
+-- Judy Wanjiku Chijimo - - - 6500 + 1500 = 8000
+-- Mary Wanjiku Njuguna - - - 5000 + 500 = 5500
+-- Robert Mutiso Kavinga - B½ - - 3500 + 500 = 4000
+-- Maurine Wanjiku Mwangi - B1 - - 3000
+-- Peter Njuguna - B½ - - 7700
+-- Harrison Mwangi Mwangi - B2 - - 5000 + 4000 = 9000
+-- Samuel Loyh Mwangi Njenga - A2 - - 3000 + 1000 = 4000
+-- Emmanuel Mwangi - - - 1350
+-- Collins Githaiga - B½ - - 1000 + 4000 = 5000
+-- Martin Kevin - B1 - - 6000 + 3000 = 9000
+-- Calvin Nyambura - B2 - - 1000 + 5000 = 6000
+
+-- PAGE 8
+-- Michael Wanjiku Mwai - B½ - - 8000 + 2000 = 10000
+-- Dennis Mwangi Mwangi - B - - 1100
+-- Irene Titus Lilian - B½ - - 2000
+-- Beatrice Othieno Ondoa - A2 - 12600 - 3000
+-- Jane Imbuzi - B - 12600 - 5000 + 8000 = 13000 - Cleared
+-- Kelvin Okeyo - A2 - - 2000
+-- Kamau Muthoni Njoki - B2 - - 1000
+-- Catherine Wanjiku Gachoki - - - 6000 + 5000 = 11000
+-- Bwibo Njuguna - C2 - - 6000 + 5000 = 11000
+-- Wambu Mwangi - - - 10000
+-- Eunice Njoki Gitu - - - 2000 + 5000 = 7000
+-- Margaret Chepkemoi Njoki - - - 2000 + 5000 = 7000
+-- Peter Mwangi - B - - 10000
+-- Pius Baru Mwangi - C - - 8500 + 6000 = 14500 - Cleared
+-- John Wanjiku - B½ - - 6700
+-- Allan Kamau Kimani - B½ - - 6000 + 2000 = 8000
+-- Michael Mwangi Kibe - B1 - - 1000 + 8000 = 9000
+
+-- PAGE 9
+-- Tuzekan Mwai David - B2 - 13600 - 6350 + 5000 = 11350
+-- Evansoni Mwangi Njuguna - B - 21600 - 5500 + 4400 = 9900 - Cleared 16/01/15
+-- Kamau Ngugi Mwangi - B2 - 21600 - 4000 + 2000 = 6000
+-- James Mwangi - B2 - - 1033 = 1033
+-- Kelvin Karanja - A2 - - 2500
+-- Ian Mwangi Wanjiru - A2 - - 5700
+-- Barnard Wachira Gakuru - B2 - 14600 - 9000
+-- Barnabas Kipkoech Tum - B2 - 14600 - 2000 + 5000 = 7000
+-- Kamau Njoki Karanja - B1 - 9600 - 5500 + 4300 = 9800
+-- Peter Mwangi - B2 - - 4000
+-- Hiram Mwangi Njuguna - B2 - - 16500 - Cleared 17/04/15
+-- David Kathage Mwangi - B - - 9700
+-- Stephen Mwangi - - - 4000 + 3000 = 7000
+-- Ian Amani Njuguna - B600 - 9400 - 2000 + 2000 = 4000
+-- Michael Mwangi Kamau - B2 - 7000 - 1000 + 2000 = 3000
+
+-- PAGE 10
+-- Shadrack Mwangi - - - 5000 + 2000 = 7000
+-- Faizani Mwangi Kamau - B - 12600 - 5000 + 3600 = 8600 - Cleared 28/07/25
+-- Kamau Wanjiku Chijimo - - - 5000 + 8000 = 13000
+-- Ezium Wanjiku Mwangi - B - 12600 - 4000 + 6000 = 10000
+-- Brice Mwangi - B - 12600 - 6000 + 3000 = 9000
+-- Fredrick Ofiso Mwangi - - - 14800 - Cleared 1/07/25
+-- Alex Murimi - B - 12600 - 3700
+-- Stephen Nthimu Vinzi - - - 9000 + 5300 = 14300
+-- Betrick Mwangi Ikebu - - - 4000 + 4800 = 8800
+-- Juchman Mwangi - - - 10000 + 600 = 10600
+-- Mercy Chepkemoi - - - 6000
+-- Mwangi Mwangi - B - 12600 - 3000
+-- Susan Wanjiku Thuku - B½ - - 3000 + 500 = 3500
+-- Lucy Wanjiku Wanjiru - B2 - - 10000 + 1600 = 11600
+-- Vicson Ngugi Mwangi - B2 - 12600 - 6000
+
+-- PAGE 11
+-- Michael Wanjiku Mwai - B½ - - 8000 + 2000 = 10000
+-- Dennis Mwangi Mwangi - B - - 1100
+-- Irene Titus Lilian - B½ - - 2000
+-- Beatrice Othieno Ondoa - A2 - 12600 - 3000
+-- Jane Imbuzi - B - 12600 - 5000 + 8000 = 13000 - Cleared
+-- Kelvin Okeyo - A2 - - 2000
+-- Kamau Muthoni Njoki - B2 - - 1000
+-- Catherine Wanjiku Gachoki - - - 6000 + 5000 = 11000
+-- Bwibo Njuguna - C2 - - 6000 + 5000 = 11000
+-- Wambu Mwangi - - - 10000
+-- Eunice Njoki Gitu - - - 2000 + 5000 = 7000
+-- Margaret Chepkemoi Njoki - - - 2000 + 5000 = 7000
+-- Peter Mwangi - B - - 10000
+-- Pius Baru Mwangi - C - - 8500 + 6000 = 14500 - Cleared
+-- John Wanjiku - B½ - - 6700
+-- Allan Kamau Kimani - B½ - - 6000 + 2000 = 8000
+-- Michael Mwangi Kibe - B1 - - 1000 + 8000 = 9000
+
+-- PAGE 12
+-- Dennis Mwangi Mwangi - C1 - 9600 - 1000 + 1500 = 2500
+-- Jane Mwangi Mwangi - B½ - - 5000
+-- Reuben Ndegwa Njuguna - - - 3600
+-- Dennis Jacobs - - - 7500
+-- William Ndegwa Mwangi - B1 - - 1000 + 3500 = 4500
+-- Eunice Kedogo - - - 6500 + 8000 = 14500
+-- Hmalizen Gere Olanda - - - 8000 + 5000 = 13000
+-- Boniface Igatau Ginjimo - B½ - 12600 - 8000 + 5000 = 13000
+-- Mercy Mwi Mwangi - B2 - 12600 - 5000
+-- Alex Faustin - B½ - - 5000
+-- Mary Wanjiku Kimani - B - - 6300 + 5000 = 11300
+-- Catherine Kamwika Mwangi - - - 1000 + 1600 = 2600 - Cleared
+-- George Ginjimo - B - - 14500
+-- Monica Adhiambo Aremu - B - - 4000 + 4000 = 8000
+-- William Rumisya Mwangi - B - - 8000 + 3000 = 11000
+-- Antony Ochieng - B - - 10000
+
+-- PAGE 13
+-- Calvin Mwangi - B - 12600 - 3000 + 5000 = 8000 - Cleared
+-- Teresa Wambi Njuguna - B1 - 12600 - 2500 + 1500 = 4000 - Cleared
+-- Bob Mwetu Njuguna - B - 12600 - 7500
+-- Fridah Kaminto David - B - 12600 - 5000
+-- Pauline Wanjiku - B - 12600 - 2600
+-- James Njeru Mwangi - B½ - - 1000 + 1000 = 2000
+-- Edith Mwangi Kuria - B2 - - 5000 + 1000 = 6000
+-- Antony Ndungu - B2 - - 5000
+-- David Ogallo - B2 - - 10000 - Cleared
+-- Wesley Mutilini - - - 5000
+-- Scola Mwangi - B2 - 11600 - 2600
+-- Munji Njomo - A2 - - 3000 + 1000 = 4000
+-- Antony Mwangi - B2 - - 9600
+-- Florence Mwangi Samwel - B2 - 12600 - 5500
+-- Kevin Antony Wanjiku - - - 6500 + 3000 = 9500
+-- Victoriah Njuguna - B2 - - 6500
+-- Brian Kipkoech Komu - A2 - - 6500 + 2500 = 9000
+-- Dennis Wanjiku Kimani - B2 - 12600 - 6500 + 5600 = 12100 - Cleared 26/07/25
+-- Felix Wanjiku Gichira - B2 - 12600 - 6500 + 5600 = 12100 - Cleared 26/07/25
+-- Alice Wanjiku Njuguna - B2 - - 3500 + 4500 = 8000
+-- Peter Njuguna - B2 - - 2200
+-- Elizabeth Mwangi - B1 - - 11600 - Cleared
+-- Kinder Lovisa - - - 13200 + 500 = 13700
+-- Paul Mbecera Mbecera - B½ - - 2500 + 6200 = 8700
+-- Raphael Kimani - B2 - - 3600 + 3000 = 6600
+-- Vincent Wekesa - B2 - - 11600
+-- Simon Kimani - B½ - - 2000 + 3000 = 5000
+-- Moses Ndegwa Wanjiku - - - 5000 + 4000 = 9000
+
+-- PAGE 14
+-- Luka Wamama Ndegwa - A2 - 12600 - 4000 + 6000 = 10000 - Cleared 11/07/25
+-- Dan Wamukoya Mwangi - B2 - 12600 - 7000 + 4200 = 11200
+-- Samuel Kimani - - - 5000 + 2500 = 7500
+-- David Ndegwa Bwana - B2 - 12600 - 5000 + 6000 = 11000
+-- Rodan Mwangi Wanjiku - B½ - - 5000 + 3500 = 8500
+-- James Gichuhi Ndungu - B - - 7000
+-- Antony Gichuki Ndungu - B½ - - 5700
+-- Stanley Kimani - B - 12600 - 2600
+-- Tabitha Mwangi - - - 3000 + 3000 = 6000
+-- Joyce Njoki Mwangi - - - 500 + 1000 = 1500
+-- Fridah Mwangi - - - 5000
+-- Nelson James Mwangi - - - 3000 + 4000 = 7000
+-- Adelide Omacso - B - - 13600 - Cleared
+-- Hellen Wanjiku - - - 3000
+-- Festus Ndungu Ndungu - B2 - - 4000 + 1500 = 5500
+
+-- PAGE 15
+-- Jane Wamama Njuguna - - - 7700 + 2500 = 10200
+-- Jacob Mwangi Mwai - B½ - - 2000 + 1000 = 3000
+-- Dorcas Njambi Mwangi - - - 3000 + 1500 = 4500
+-- Judy Wambui - B2 - - 5000 + 6600 = 11600
+-- Asbania Ndegwa - - - 10000 + 1600 = 11600
+-- Rosekhani Kimani - B2 - 12600 - 10000 + 1600 = 11600
+-- Blankness Mwangi Wanjiku - B½ - - 8700
+-- Antony Lucy Wanjiku Ginjimo - - - 11600 + 13300 = 24900
+-- Fredrick Ochieng - - - 5000
+-- Alex Wanjiku Ginjimo - - - 4000 + 6000 = 10000
+-- Faith Rotich - - - 2000
+-- Simon Mwangi Njoki - - - 5700
+-- Antony Bwimba - - - 5000
+-- Mary Njuguna - - - 2000 + 5000 = 7000
+-- Macharia Juliet Anjuhi - B1 - - 13300 - Cleared
+-- Mike Antony - C1 - - 5000 + 6000 = 11000
+
+-- PAGE 16
+-- Tuzekan Mwai David - B2 - 13600 - 6350 + 5000 = 11350
+-- Evansoni Mwangi Njuguna - B - 21600 - 5500 + 4400 = 9900 - Cleared 16/01/15
+-- Kamau Ngugi Mwangi - B2 - 21600 - 4000 + 2000 = 6000
+-- James Mwangi - B2 - - 1033
+-- Kelvin Karanja - A2 - - 2500
+-- Ian Mwangi Wanjiru - A2 - - 5700
+-- Barnard Wachira Gakuru - B2 - 14600 - 9000
+-- Barnabas Kipkoech Tum - B2 - 14600 - 2000 + 5000 = 7000
+-- Kamau Njoki Karanja - B1 - 9600 - 5500 + 4300 = 9800
+-- Peter Mwangi - B2 - - 4000
+-- Hiram Mwangi Njuguna - B2 - - 16500 - Cleared 17/04/15
+-- David Kathage Mwangi - B - - 9700
+-- Stephen Mwangi - - - 4000 + 3000 = 7000
+-- Ian Amani Njuguna - B600 - 9400 - 2000 + 2000 = 4000
+-- Michael Mwangi Kamau - B2 - 7000 - 1000 + 2000 = 3000
+
+INSERT INTO profiles (id, email, password_hash, full_name, phone, id_number, date_of_birth, address, avatar_url, created_at, updated_at) VALUES

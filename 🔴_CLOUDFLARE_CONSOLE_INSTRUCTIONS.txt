@@ -1,0 +1,97 @@
+═══════════════════════════════════════════════════════════
+    CREATE ADMIN ACCOUNT IN CLOUDFLARE CONSOLE
+═══════════════════════════════════════════════════════════
+
+📍 STEP 1: GO TO CLOUDFLARE D1 CONSOLE
+   1. Login to Cloudflare Dashboard
+   2. Click "Workers & Pages" in left sidebar
+   3. Click "D1" tab
+   4. Click on "we-zombie" database
+   5. Click "Console" tab at the top
+
+═══════════════════════════════════════════════════════════
+
+📝 STEP 2: RUN THESE COMMANDS ONE BY ONE
+
+Copy and paste each command, then click "Execute"
+
+---
+
+COMMAND 1: Delete old admin accounts
+───────────────────────────────────────────────────────────
+DELETE FROM user_roles WHERE user_id IN (
+  SELECT id FROM profiles WHERE email LIKE '%admin%' OR email LIKE '%hamisi%'
+);
+───────────────────────────────────────────────────────────
+
+COMMAND 2: Delete old profiles
+───────────────────────────────────────────────────────────
+DELETE FROM profiles WHERE email LIKE '%admin%' OR email LIKE '%hamisi%';
+───────────────────────────────────────────────────────────
+
+COMMAND 3: Create admin profile
+───────────────────────────────────────────────────────────
+INSERT INTO profiles (id, email, password_hash, full_name, phone, created_at, updated_at) 
+VALUES ('admin-2026', 'admin@immacurate.co.ke', '$2b$10$QcMhNu6cwoXr9ZXfLvabjeH4R2RTc8XDJxTQAyP2ubHjhfXBf5Ylu', 'Admin User', '0721171911', datetime('now'), datetime('now'));
+───────────────────────────────────────────────────────────
+
+COMMAND 4: Assign admin role
+───────────────────────────────────────────────────────────
+INSERT INTO user_roles (id, user_id, role, created_at) 
+VALUES ('role-admin-2026', 'admin-2026', 'admin', datetime('now'));
+───────────────────────────────────────────────────────────
+
+COMMAND 5: Verify account created
+───────────────────────────────────────────────────────────
+SELECT p.id, p.email, p.full_name, ur.role 
+FROM profiles p 
+LEFT JOIN user_roles ur ON p.id = ur.user_id 
+WHERE p.email = 'admin@immacurate.co.ke';
+───────────────────────────────────────────────────────────
+
+You should see:
+id: admin-2026
+email: admin@immacurate.co.ke
+full_name: Admin User
+role: admin
+
+═══════════════════════════════════════════════════════════
+
+🔑 STEP 3: LOGIN WITH THESE CREDENTIALS
+
+URL:      https://immacurate.co.ke/login
+Email:    admin@immacurate.co.ke
+Password: Admin123!
+
+═══════════════════════════════════════════════════════════
+
+⚠️ IMPORTANT NOTES:
+
+1. Run commands ONE BY ONE (not all at once)
+2. Click "Execute" after each command
+3. Wait for "Success" message before next command
+4. The password hash is already encrypted
+5. Password is: Admin123! (capital A, exclamation at end)
+
+═══════════════════════════════════════════════════════════
+
+🎯 AFTER CREATING ACCOUNT:
+
+1. Go to: https://immacurate.co.ke/login
+2. Enter email: admin@immacurate.co.ke
+3. Enter password: Admin123!
+4. Click "Sign In"
+5. You should be redirected to dashboard
+6. Navigate to: https://immacurate.co.ke/admin/dashboard
+
+═══════════════════════════════════════════════════════════
+
+📞 IF IT STILL DOESN'T WORK:
+
+After running the commands, clear your browser cache:
+- Press Ctrl+Shift+Delete
+- Select "Cookies and cached files"
+- Click "Clear data"
+- Try logging in again
+
+═══════════════════════════════════════════════════════════

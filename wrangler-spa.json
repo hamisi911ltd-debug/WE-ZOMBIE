@@ -1,0 +1,17 @@
+{
+  "name": "we-zombie",
+  "compatibility_date": "2025-09-24",
+  "compatibility_flags": ["nodejs_compat"],
+  "main": "simple-worker.ts",
+  "assets": {
+    "directory": "./dist",
+    "binding": "ASSETS"
+  },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "we-zombie",
+      "database_id": "b31da365-97d1-4155-9214-c2ec8c886766"
+    }
+  ]
+}

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { getStudentsFn, updateProfileFn } from '@/backend/lib/api-students';
+import { studentsAPI } from '@/lib/api-client';
 
 export type Profile = {
   id: string;
@@ -35,8 +35,20 @@ export function useStudents(search?: string, filter?: StudentFilter) {
   return useQuery({
     queryKey: ['students', debouncedSearch, filter],
     queryFn: async (): Promise<Profile[]> => {
-      const data = await getStudentsFn({ data: { search: debouncedSearch, filter } });
-      return data as unknown as Profile[];
+      try {
+        const data = await studentsAPI.getAll();
+        // Filter by search term if provided
+        if (debouncedSearch) {
+          return data.filter((student: any) => 
+            student.fullName?.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
+            student.email?.toLowerCase().includes(debouncedSearch.toLowerCase())
+          );
+        }
+        return data;
+      } catch (error) {
+        console.error('Failed to fetch students:', error);
+        return [];
+      }
     },
   });
 }
@@ -50,7 +62,10 @@ export function useUpdateProfile() {
 
   return useMutation({
     mutationFn: async ({ id, full_name, phone }: { id: string; full_name?: string; phone?: string }) => {
-      return await updateProfileFn({ data: { id, full_name, phone } });
+      return await studentsAPI.update(id, { 
+        fullName: full_name, 
+        phone 
+      });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['students'] });

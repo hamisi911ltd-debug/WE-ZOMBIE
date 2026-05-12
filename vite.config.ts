@@ -13,13 +13,18 @@ export default defineConfig({
     manifest: true,
     rollupOptions: {
       output: {
-        entryFileNames: `assets/[name].js`,
-        chunkFileNames: `assets/[name].js`,
-        assetFileNames: `assets/[name].[ext]`,
+        entryFileNames: `assets/app-[hash].js`,
+        chunkFileNames: `assets/chunk-[hash].js`,
+        assetFileNames: `assets/style-[hash].[ext]`,
       },
     },
   },
   ssr: {
     external: ["lucide-react", "jose", "bcryptjs", "better-sqlite3", "drizzle-orm"],
+  },
+  resolve: {
+    alias: {
+      "@": "/src",
+    },
   },
 });

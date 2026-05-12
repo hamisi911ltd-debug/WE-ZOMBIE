@@ -20,6 +20,7 @@ import {
 
 export const Route = createFileRoute("/")({
   component: Landing,
+  ssr: false, // Disable SSR for landing page to avoid Worker SSR issues
 });
 
 function Landing() {

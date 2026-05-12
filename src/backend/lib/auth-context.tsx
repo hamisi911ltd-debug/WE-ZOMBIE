@@ -1,5 +1,5 @@
 import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
-import { getSessionFn, logoutFn } from "./auth-server";
+import { authAPI } from "@/lib/api-client";
 
 export type AppRole = "admin" | "instructor" | "student";
 
@@ -23,20 +23,30 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   const checkSession = async () => {
+    console.log("Checking session...");
+    setLoading(true);
     try {
-      const data = await getSessionFn();
-      if (data) {
+      const data = await authAPI.getSession();
+      console.log("Session data received:", data);
+      if (data && data.user) {
         setSession(data.user);
         setRoles(data.roles as AppRole[]);
+        console.log("Session set successfully:", data.user.email, "Roles:", data.roles);
+        return data; // Return the session data
       } else {
         setSession(null);
         setRoles([]);
+        console.log("No valid session data");
+        return null;
       }
     } catch (err) {
+      console.error('Auth session check failed:', err);
       setSession(null);
       setRoles([]);
+      return null;
     } finally {
       setLoading(false);
+      console.log("Session check complete");
     }
   };
 
@@ -53,12 +63,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       isAuthenticated: !!session,
       hasRole: (r) => roles.includes(r),
       signOut: async () => {
-        await logoutFn();
+        await authAPI.logout();
         setSession(null);
         setRoles([]);
       },
       checkSession,
-      refreshRoles: checkSession, // We can just call checkSession to refresh everything
+      refreshRoles: checkSession,
     }),
     [session, roles, loading],
   );

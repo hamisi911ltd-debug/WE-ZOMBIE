@@ -10,7 +10,7 @@ export const getLessonProgressFn = createServerFn({ method: "POST" })
     const session = await getSessionFn();
     if (!session) throw new Error("Unauthenticated");
 
-    const db = getDb(process.env);
+    const db = getDb();
     
     // Get all modules for the course
     const courseModules = await db.select().from(modules).where(eq(modules.courseId, courseId)).all();
@@ -32,7 +32,7 @@ export const markLessonCompleteFn = createServerFn({ method: "POST" })
     const session = await getSessionFn();
     if (!session) throw new Error("Unauthenticated");
 
-    const db = getDb(process.env);
+    const db = getDb();
     const existing = await db.select().from(lessonProgress).where(and(eq(lessonProgress.userId, userId), eq(lessonProgress.lessonId, lessonId))).get();
 
     if (existing) {

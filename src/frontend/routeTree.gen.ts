@@ -9,10 +9,12 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as TestRouteImport } from './routes/test'
 import { Route as SignupRouteImport } from './routes/signup'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AuthenticatedUsersRouteImport } from './routes/_authenticated.users'
 import { Route as AuthenticatedStudentsRouteImport } from './routes/_authenticated.students'
 import { Route as AuthenticatedScheduleRouteImport } from './routes/_authenticated.schedule'
 import { Route as AuthenticatedPaymentsRouteImport } from './routes/_authenticated.payments'
@@ -21,6 +23,11 @@ import { Route as AuthenticatedCoursesIndexRouteImport } from './routes/_authent
 import { Route as AuthenticatedCoursesCourseIdIndexRouteImport } from './routes/_authenticated.courses.$courseId.index'
 import { Route as AuthenticatedCoursesCourseIdModulesModuleIdRouteImport } from './routes/_authenticated.courses.$courseId.modules.$moduleId'
 
+const TestRoute = TestRouteImport.update({
+  id: '/test',
+  path: '/test',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const SignupRoute = SignupRouteImport.update({
   id: '/signup',
   path: '/signup',
@@ -39,6 +46,11 @@ const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
+} as any)
+const AuthenticatedUsersRoute = AuthenticatedUsersRouteImport.update({
+  id: '/users',
+  path: '/users',
+  getParentRoute: () => AuthenticatedRoute,
 } as any)
 const AuthenticatedStudentsRoute = AuthenticatedStudentsRouteImport.update({
   id: '/students',
@@ -83,10 +95,12 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/login': typeof LoginRoute
   '/signup': typeof SignupRoute
+  '/test': typeof TestRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/payments': typeof AuthenticatedPaymentsRoute
   '/schedule': typeof AuthenticatedScheduleRoute
   '/students': typeof AuthenticatedStudentsRoute
+  '/users': typeof AuthenticatedUsersRoute
   '/courses/': typeof AuthenticatedCoursesIndexRoute
   '/courses/$courseId/': typeof AuthenticatedCoursesCourseIdIndexRoute
   '/courses/$courseId/modules/$moduleId': typeof AuthenticatedCoursesCourseIdModulesModuleIdRoute
@@ -95,10 +109,12 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/login': typeof LoginRoute
   '/signup': typeof SignupRoute
+  '/test': typeof TestRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/payments': typeof AuthenticatedPaymentsRoute
   '/schedule': typeof AuthenticatedScheduleRoute
   '/students': typeof AuthenticatedStudentsRoute
+  '/users': typeof AuthenticatedUsersRoute
   '/courses': typeof AuthenticatedCoursesIndexRoute
   '/courses/$courseId': typeof AuthenticatedCoursesCourseIdIndexRoute
   '/courses/$courseId/modules/$moduleId': typeof AuthenticatedCoursesCourseIdModulesModuleIdRoute
@@ -109,10 +125,12 @@ export interface FileRoutesById {
   '/_authenticated': typeof AuthenticatedRouteWithChildren
   '/login': typeof LoginRoute
   '/signup': typeof SignupRoute
+  '/test': typeof TestRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/_authenticated/payments': typeof AuthenticatedPaymentsRoute
   '/_authenticated/schedule': typeof AuthenticatedScheduleRoute
   '/_authenticated/students': typeof AuthenticatedStudentsRoute
+  '/_authenticated/users': typeof AuthenticatedUsersRoute
   '/_authenticated/courses/': typeof AuthenticatedCoursesIndexRoute
   '/_authenticated/courses/$courseId/': typeof AuthenticatedCoursesCourseIdIndexRoute
   '/_authenticated/courses/$courseId/modules/$moduleId': typeof AuthenticatedCoursesCourseIdModulesModuleIdRoute
@@ -123,10 +141,12 @@ export interface FileRouteTypes {
     | '/'
     | '/login'
     | '/signup'
+    | '/test'
     | '/dashboard'
     | '/payments'
     | '/schedule'
     | '/students'
+    | '/users'
     | '/courses/'
     | '/courses/$courseId/'
     | '/courses/$courseId/modules/$moduleId'
@@ -135,10 +155,12 @@ export interface FileRouteTypes {
     | '/'
     | '/login'
     | '/signup'
+    | '/test'
     | '/dashboard'
     | '/payments'
     | '/schedule'
     | '/students'
+    | '/users'
     | '/courses'
     | '/courses/$courseId'
     | '/courses/$courseId/modules/$moduleId'
@@ -148,10 +170,12 @@ export interface FileRouteTypes {
     | '/_authenticated'
     | '/login'
     | '/signup'
+    | '/test'
     | '/_authenticated/dashboard'
     | '/_authenticated/payments'
     | '/_authenticated/schedule'
     | '/_authenticated/students'
+    | '/_authenticated/users'
     | '/_authenticated/courses/'
     | '/_authenticated/courses/$courseId/'
     | '/_authenticated/courses/$courseId/modules/$moduleId'
@@ -162,10 +186,18 @@ export interface RootRouteChildren {
   AuthenticatedRoute: typeof AuthenticatedRouteWithChildren
   LoginRoute: typeof LoginRoute
   SignupRoute: typeof SignupRoute
+  TestRoute: typeof TestRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/test': {
+      id: '/test'
+      path: '/test'
+      fullPath: '/test'
+      preLoaderRoute: typeof TestRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/signup': {
       id: '/signup'
       path: '/signup'
@@ -193,6 +225,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated/users': {
+      id: '/_authenticated/users'
+      path: '/users'
+      fullPath: '/users'
+      preLoaderRoute: typeof AuthenticatedUsersRouteImport
+      parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/students': {
       id: '/_authenticated/students'
@@ -251,6 +290,7 @@ interface AuthenticatedRouteChildren {
   AuthenticatedPaymentsRoute: typeof AuthenticatedPaymentsRoute
   AuthenticatedScheduleRoute: typeof AuthenticatedScheduleRoute
   AuthenticatedStudentsRoute: typeof AuthenticatedStudentsRoute
+  AuthenticatedUsersRoute: typeof AuthenticatedUsersRoute
   AuthenticatedCoursesIndexRoute: typeof AuthenticatedCoursesIndexRoute
   AuthenticatedCoursesCourseIdIndexRoute: typeof AuthenticatedCoursesCourseIdIndexRoute
   AuthenticatedCoursesCourseIdModulesModuleIdRoute: typeof AuthenticatedCoursesCourseIdModulesModuleIdRoute
@@ -261,6 +301,7 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedPaymentsRoute: AuthenticatedPaymentsRoute,
   AuthenticatedScheduleRoute: AuthenticatedScheduleRoute,
   AuthenticatedStudentsRoute: AuthenticatedStudentsRoute,
+  AuthenticatedUsersRoute: AuthenticatedUsersRoute,
   AuthenticatedCoursesIndexRoute: AuthenticatedCoursesIndexRoute,
   AuthenticatedCoursesCourseIdIndexRoute:
     AuthenticatedCoursesCourseIdIndexRoute,
@@ -277,6 +318,7 @@ const rootRouteChildren: RootRouteChildren = {
   AuthenticatedRoute: AuthenticatedRouteWithChildren,
   LoginRoute: LoginRoute,
   SignupRoute: SignupRoute,
+  TestRoute: TestRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

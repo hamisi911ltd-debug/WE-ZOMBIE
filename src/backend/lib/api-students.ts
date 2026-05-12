@@ -13,7 +13,7 @@ export const getStudentsFn = createServerFn({ method: "POST" })
       return [];
     }
 
-    const db = getDb(process.env);
+    const db = getDb();
     
     // Get all students
     let q = db
@@ -58,7 +58,7 @@ export const updateProfileFn = createServerFn({ method: "POST" })
         throw new Error("Unauthorized");
     }
 
-    const db = getDb(process.env);
+    const db = getDb();
     await db.update(profiles).set({
       fullName: full_name,
       phone: phone,

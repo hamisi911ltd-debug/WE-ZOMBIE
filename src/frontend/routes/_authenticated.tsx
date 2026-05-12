@@ -30,7 +30,22 @@ function AuthLayout() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   useEffect(() => {
-    if (!loading && !isAuthenticated) nav({ to: "/login" });
+    console.log("Auth layout - loading:", loading, "isAuthenticated:", isAuthenticated);
+    
+    if (!loading) {
+      if (!isAuthenticated) {
+        console.log("Not authenticated, redirecting to login");
+        // Use both methods for maximum compatibility
+        try {
+          nav({ to: "/login", replace: true });
+        } catch (error) {
+          console.log("TanStack navigation failed, using window.location");
+          window.location.href = "/login";
+        }
+      } else {
+        console.log("Authenticated, user can access protected route");
+      }
+    }
   }, [loading, isAuthenticated, nav]);
 
   if (loading || !isAuthenticated) {
@@ -51,6 +66,7 @@ function AuthLayout() {
     { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
     { to: "/courses", label: "Courses", icon: GraduationCap },
     ...(isAdmin ? [{ to: "/students", label: "Students", icon: Users }] : []),
+    ...(isAdmin ? [{ to: "/users", label: "Users", icon: UserCircle }] : []),
     { to: "/payments", label: "Payments", icon: CreditCard },
     { to: "/schedule", label: "Schedule", icon: Calendar },
   ] as const;
@@ -63,7 +79,7 @@ function AuthLayout() {
     <div className="flex min-h-screen" style={{ background: "#f1f5f9" }}>
       {/* ── Desktop Sidebar ── */}
       <aside
-        className="admin-sidebar hidden lg:flex w-64 shrink-0 flex-col fixed inset-y-0 left-0 z-30"
+        className="admin-sidebar hidden lg:flex w-56 shrink-0 flex-col fixed inset-y-0 left-0 z-30"
       >
         {/* Logo */}
         <div className="flex items-center gap-3 px-5 py-5 border-b" style={{ borderColor: "rgba(255,255,255,0.08)" }}>

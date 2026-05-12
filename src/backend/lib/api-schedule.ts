@@ -10,7 +10,7 @@ export const getScheduleFn = createServerFn({ method: "GET" })
   .handler(async ({ data: query }) => {
     const session = await getSessionFn();
     if (!session) throw new Error("Unauthorized");
-    const db = getDb(process.env);
+    const db = getDb();
     const { userId } = query ?? {};
     
     if (userId) {
@@ -30,7 +30,7 @@ export const createScheduleFn = createServerFn({ method: "POST" })
   .handler(async ({ data: { data } }) => {
     const session = await getSessionFn();
     if (!session) throw new Error("Unauthorized");
-    const db = getDb(process.env);
+    const db = getDb();
     const id = crypto.randomUUID();
     const now = new Date().toISOString();
     const newEntry = {
@@ -49,7 +49,7 @@ export const updateScheduleFn = createServerFn({ method: "POST" }) // Changed to
   .handler(async ({ data: { id, updates } }) => {
     const session = await getSessionFn();
     if (!session) throw new Error("Unauthorized");
-    const db = getDb(process.env);
+    const db = getDb();
     await db
       .update(scheduleEntries)
       .set({ ...updates, updatedAt: new Date().toISOString() })
@@ -64,7 +64,7 @@ export const deleteScheduleFn = createServerFn({ method: "POST" })
   .handler(async ({ data: { id } }) => {
     const session = await getSessionFn();
     if (!session) throw new Error("Unauthorized");
-    const db = getDb(process.env);
+    const db = getDb();
     await db.delete(scheduleEntries).where(eq(scheduleEntries.id, id)).run();
     return { success: true };
   });

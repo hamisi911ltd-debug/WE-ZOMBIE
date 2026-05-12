@@ -7,6 +7,9 @@
   "assets": {
     "directory": "dist/client"
   },
+  "analytics": {
+    "enabled": false
+  },
   "d1_databases": [
     {
       "binding": "DB",

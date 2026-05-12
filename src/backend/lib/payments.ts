@@ -39,20 +39,22 @@ export function generateReceiptContent(
     month: 'long',
     day: 'numeric',
   });
-  const formattedAmount = new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency: 'USD',
-  }).format(payment.amount);
+  const formattedAmount = `KES ${(payment.amount / 100).toLocaleString()}`;
 
   return [
     '========================================',
-    '         TACO DRIVING SCHOOL',
+    '      IMMACURATE DRIVING SCHOOL',
     '              RECEIPT',
     '========================================',
     `Receipt ID:   ${payment.id}`,
     `Student:      ${studentName}`,
     `Payment Date: ${paymentDate}`,
     `Amount:       ${formattedAmount}`,
+    '',
+    'Juja Arcade, 1st Floor',
+    'P.O Box 717-01001 Kalimoni',
+    'Phone: 0721 171911',
+    'Email: immacuratedriving77@gmail.com',
     '========================================',
     'Thank you for your payment!',
   ].join('\n');

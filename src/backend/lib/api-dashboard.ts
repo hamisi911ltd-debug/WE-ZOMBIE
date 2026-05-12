@@ -9,7 +9,7 @@ export const getDashboardStatsFn = createServerFn({ method: "GET" }).handler(asy
   const session = await getSessionFn();
   if (!session || !session.roles.includes("admin")) throw new Error("Unauthorized");
 
-  const db = getDb(process.env);
+  const db = getDb();
   const now = new Date();
   const sevenDaysLater = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
   const todayStr = now.toISOString().split("T")[0];
@@ -36,7 +36,7 @@ export const getDashboardStatsFn = createServerFn({ method: "GET" }).handler(asy
 });
 
 export const getAdminCountFn = createServerFn({ method: "GET" }).handler(async () => {
-  const db = getDb(process.env);
+  const db = getDb();
   const [res] = await db.select({ value: count() }).from(userRoles).where(eq(userRoles.role, "admin")).all();
   return res.value;
 });
@@ -45,7 +45,7 @@ export const claimFirstAdminFn = createServerFn({ method: "POST" }).handler(asyn
   const session = await getSessionFn();
   if (!session) throw new Error("Unauthenticated");
 
-  const db = getDb(process.env);
+  const db = getDb();
   const [res] = await db.select({ value: count() }).from(userRoles).where(eq(userRoles.role, "admin")).all();
   
   if (res.value > 0) return { success: false, message: "Admin already exists" };
@@ -64,7 +64,7 @@ export const getStudentCourseStatsFn = createServerFn({ method: "POST" })
     const session = await getSessionFn();
     if (!session) throw new Error("Unauthenticated");
 
-    const db = getDb(process.env);
+    const db = getDb();
     const course = await db.select().from(courses).where(eq(courses.id, courseId)).get();
     if (!course) return null;
 

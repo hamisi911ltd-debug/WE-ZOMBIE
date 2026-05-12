@@ -10,7 +10,7 @@ export const getEnrollmentsFn = createServerFn({ method: "POST" })
     const session = await getSessionFn();
     if (!session) return [];
 
-    const db = getDb(process.env);
+    const db = getDb();
     const isAdmin = session.roles.includes("admin") || session.roles.includes("instructor");
 
     const effectiveUserId = userId ?? (isAdmin ? undefined : session.user.id);
@@ -29,12 +29,14 @@ export const createEnrollmentFn = createServerFn({ method: "POST" })
       throw new Error("Unauthorized");
     }
 
-    const db = getDb(process.env);
-    const id = crypto.randomUUID();
+    const db = getDb();
+    const now = new Date().toISOString();
     const newEnrollment = {
       ...data,
       id,
-      enrolledAt: data.enrolledAt ?? new Date().toISOString(),
+      enrolledAt: data.enrolledAt ?? now,
+      createdAt: now,
+      updatedAt: now,
       status: data.status ?? "active",
     };
     await db.insert(enrollments).values(newEnrollment).run();
@@ -49,7 +51,7 @@ export const updateEnrollmentFn = createServerFn({ method: "POST" })
       throw new Error("Unauthorized");
     }
 
-    const db = getDb(process.env);
+    const db = getDb();
     const { id, ...updates } = data;
     await db.update(enrollments).set(updates).where(eq(enrollments.id, id)).run();
     return db.select().from(enrollments).where(eq(enrollments.id, id)).get();
